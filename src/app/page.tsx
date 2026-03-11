@@ -19,7 +19,7 @@ export default function Home() {
     // Request geolocation on mount
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        () => {
           // Success
           setLocationGranted(true);
           setLoading(false);
