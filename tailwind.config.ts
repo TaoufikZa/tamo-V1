@@ -11,6 +11,9 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        "tamo-lime": "#A4F51C",
+        "tamo-dark": "#013220",
+        "tamo-light": "#F0F2F5",
       },
     },
   },
