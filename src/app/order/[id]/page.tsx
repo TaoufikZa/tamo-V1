@@ -71,7 +71,7 @@ export default function OrderPage({ params }: { params: { id: string } }) {
 
         try {
             // 🚀 Send the data back to n8n!
-            const response = await fetch("https://tamoit.app.n8n.cloud/webhook-test/merchant-reply", {
+            const response = await fetch("https://tamoit.app.n8n.cloud/webhook/merchant-reply", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
