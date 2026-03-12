@@ -2,8 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@supabase/supabase-js";
 
-// Mock Data Type
+// Initialize Supabase Client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Data Type
 interface Order {
     id: string;
     shop_id: string;
@@ -19,19 +25,27 @@ export default function OrderPage({ params }: { params: { id: string } }) {
     const [amount, setAmount] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Simulate Fetching Data
+    // 🚀 REAL DATA FETCHING
     useEffect(() => {
         const fetchOrder = async () => {
-            // Simulate network delay
-            await new Promise((resolve) => setTimeout(resolve, 800));
+            try {
+                const { data, error } = await supabase
+                    .from("orders")
+                    .select("*")
+                    .eq("id", params.id)
+                    .single();
 
-            setOrder({
-                id: params.id,
-                shop_id: "1",
-                audio_url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-                status: "pending",
-            });
-            setLoading(false);
+                if (error) {
+                    console.error("Error fetching order:", error);
+                    setOrder(null);
+                } else if (data) {
+                    setOrder(data as Order);
+                }
+            } catch (err) {
+                console.error("Unexpected error:", err);
+            } finally {
+                setLoading(false);
+            }
         };
 
         fetchOrder();
@@ -54,7 +68,7 @@ export default function OrderPage({ params }: { params: { id: string } }) {
         if (!amount || isNaN(Number(amount))) return;
 
         setIsSubmitting(true);
-        // Simulate API call to notify customer
+        // TODO: Later we will add the real API call to notify the customer here
         await new Promise((resolve) => setTimeout(resolve, 1500));
         setIsSubmitting(false);
 
