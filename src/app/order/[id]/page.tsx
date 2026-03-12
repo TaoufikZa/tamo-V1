@@ -68,12 +68,33 @@ export default function OrderPage({ params }: { params: { id: string } }) {
         if (!amount || isNaN(Number(amount))) return;
 
         setIsSubmitting(true);
-        // TODO: Later we will add the real API call to notify the customer here
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        setIsSubmitting(false);
 
-        if (order) {
-            setOrder({ ...order, status: "accepted" });
+        try {
+            // 🚀 Send the data back to n8n!
+            const response = await fetch("https://tamoit.app.n8n.cloud/webhook-test/receive-order", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    orderId: order?.id,
+                    amount: amount,
+                    status: "accepted"
+                }),
+            });
+
+            if (response.ok) {
+                // If n8n received it successfully, show the green success screen
+                if (order) setOrder({ ...order, status: "accepted" });
+            } else {
+                console.error("Failed to send to n8n");
+                alert("Failed to notify customer. Please try again.");
+            }
+        } catch (error) {
+            console.error("Webhook error:", error);
+            alert("Network error.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
