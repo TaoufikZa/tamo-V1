@@ -88,7 +88,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
             formData.append("audio", audioBlob, "order.webm");
             formData.append("shopId", params.id);
 
-            const response = await fetch("https://tamoit.app.n8n.cloud/webhook/receive-order", {
+            const response = await fetch("https://tamoit.app.n8n.cloud/webhook/a4839bf6-9651-4134-8225-b1c5c0ed6d55", {
                 method: "POST",
                 body: formData,
             });
