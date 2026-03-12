@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 
 // Mock Data
 const MOCK_SHOPS = [
-    { id: "1", name: "Hanout Brahim", type: "Store", distance: "120m" },
-    { id: "2", name: "Khadija Sweets", type: "Home Bakery", distance: "300m" },
-    { id: "3", name: "Epicerie Atlas", type: "Store", distance: "500m" },
+    { id: "1", name: "Hanout Brahim", type: "Store", distance: "120m", phone: "212600000001" },
+    { id: "2", name: "Khadija Sweets", type: "Home Bakery", distance: "300m", phone: "212600000002" },
+    { id: "3", name: "Epicerie Atlas", type: "Store", distance: "500m", phone: "212600000003" },
+    { id: "taoufik-shop", name: "Taoufik Shop", type: "General Store", distance: "600m", phone: "212601866049" },
 ];
 
 export default function ShopPage({ params }: { params: { id: string } }) {
