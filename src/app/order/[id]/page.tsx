@@ -65,35 +65,57 @@ export default function OrderPage({ params }: { params: { id: string } }) {
 
     const handleValidatePrice = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!amount || isNaN(Number(amount))) return;
+        const numericAmount = Number(amount);
+        if (!amount || isNaN(numericAmount)) return;
 
         setIsSubmitting(true);
 
         try {
-            // 🚀 Send the data back to n8n!
-            const response = await fetch(process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || "", {
+            // 1. Update Supabase first
+            const { error: supabaseError } = await supabase
+                .from("orders")
+                .update({
+                    status: "accepted",
+                    amount: numericAmount
+                })
+                .eq("id", params.id);
+
+            if (supabaseError) {
+                console.error("Supabase update error:", supabaseError);
+                alert("Failed to update order in database.");
+                return;
+            }
+
+            // 2. 🚀 Trigger the merchant response webhook!
+            const response = await fetch(process.env.NEXT_PUBLIC_N8N_MERCHANT_RESPONSE_WEBHOOK_URL || "", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 mode: "cors",
                 body: JSON.stringify({
-                    orderId: order?.id,
-                    amount: amount,
+                    order_id: params.id,
+                    shop_id: order?.shop_id || "1",
+                    amount: numericAmount,
                     status: "accepted"
                 }),
             });
 
             if (response.ok) {
                 // If n8n received it successfully, show the green success screen
-                if (order) setOrder({ ...order, status: "accepted" });
+                if (order) {
+                    setOrder({
+                        ...order,
+                        status: "accepted"
+                    });
+                }
             } else {
-                console.error("Failed to send to n8n");
-                alert("Failed to notify customer. Please try again.");
+                console.error("Failed to send to n8n merchant-response");
+                alert("Order saved, but failed to notify customer. Please check n8n.");
             }
         } catch (error) {
-            console.error("Webhook error:", error);
-            alert("Network error.");
+            console.error("Process error:", error);
+            alert("A network error occurred.");
         } finally {
             setIsSubmitting(false);
         }
