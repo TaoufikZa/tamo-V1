@@ -130,10 +130,7 @@ export default function ShopPage() {
     };
 
     const handleSendOrder = async () => {
-        if (!audioBlob || !customerPhone || !customerName) {
-            alert("Please fill in all details.");
-            return;
-        }
+        if (!audioBlob) return;
         setIsSending(true);
 
         try {
@@ -150,8 +147,6 @@ export default function ShopPage() {
                     },
                     mode: "cors",
                     body: JSON.stringify({
-                        customer_name: customerName,
-                        customer_phone: customerPhone,
                         shop_id: id,
                         audio: base64Audio,
                         latitude: location?.lat || null,
@@ -263,40 +258,10 @@ export default function ShopPage() {
                         <audio controls src={audioUrl} className="w-full" />
 
                         <div className="flex flex-col w-full space-y-4 mt-8">
-                            <div className="flex flex-col space-y-2 w-full">
-                                <label htmlFor="customerName" className="text-sm font-bold text-tamo-dark text-left w-full">
-                                    Your Full Name
-                                </label>
-                                <input
-                                    id="customerName"
-                                    type="text"
-                                    placeholder="Enter your name..."
-                                    required
-                                    value={customerName}
-                                    onChange={(e) => setCustomerName(e.target.value)}
-                                    className="w-full p-4 rounded-xl border-2 border-gray-100 focus:border-tamo-lime focus:outline-none transition-colors"
-                                />
-                            </div>
-
-                            <div className="flex flex-col space-y-2 w-full">
-                                <label htmlFor="customerPhone" className="text-sm font-bold text-tamo-dark text-left w-full">
-                                    Your Phone Number (WhatsApp)
-                                </label>
-                                <input
-                                    id="customerPhone"
-                                    type="tel"
-                                    placeholder="212600000000"
-                                    required
-                                    value={customerPhone}
-                                    onChange={(e) => setCustomerPhone(e.target.value)}
-                                    className="w-full p-4 rounded-xl border-2 border-gray-100 focus:border-tamo-lime focus:outline-none transition-colors font-mono"
-                                />
-                            </div>
-
                             <button
                                 onClick={handleSendOrder}
-                                disabled={isSending || !customerPhone || !customerName}
-                                className={`w-full py-4 rounded-xl font-bold text-lg transition-transform text-tamo-lime bg-tamo-dark ${isSending || !customerPhone || !customerName ? "opacity-75 cursor-not-allowed" : "hover:scale-[1.02] active:scale-95 shadow-md"
+                                disabled={isSending}
+                                className={`w-full py-4 rounded-xl font-bold text-lg transition-transform text-tamo-lime bg-tamo-dark ${isSending ? "opacity-75 cursor-not-allowed" : "hover:scale-[1.02] active:scale-95 shadow-md"
                                     }`}
                             >
                                 {isSending ? "Sending..." : "Send Order"}
