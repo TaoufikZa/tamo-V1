@@ -123,6 +123,38 @@ export default function OrderPage({ params }: { params: { id: string } }) {
                 })
                 .eq("id", params.id);
 
+            if (supabaseError) {
+                console.error("Supabase update error:", supabaseError);
+                alert("Failed to update order in database.");
+                setIsSubmitting(false);
+                return;
+            }
+
+            // 2. 🚀 Trigger the merchant reply webhook (Accepted)
+            const response = await fetch(process.env.NEXT_PUBLIC_N8N_MERCHANT_REPLY_WEBHOOK_URL || "", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                mode: "cors",
+                body: JSON.stringify({
+                    order_id: params.id,
+                    shop_id: order?.shop_id || "1",
+                    status: "accepted",
+                    amount: numericAmount
+                }),
+            });
+
+            if (response.ok) {
+                if (order) setOrder({ ...order, status: "accepted" });
+            } else {
+                console.error("Failed to send to n8n merchant-reply");
+                alert("Order saved, but failed to notify customer. Please check n8n.");
+            }
+        } catch (error) {
+            console.error("Process error:", error);
+            alert("A network error occurred.");
+        } finally {
             setIsSubmitting(false);
         }
     };
