@@ -17,6 +17,7 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "tamo - Just Speak It",
   description: "tamo audio-ordering flow",
+  // Build trigger: 2024-03-13T22:35Z
   viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 };
 
