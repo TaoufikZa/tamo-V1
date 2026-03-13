@@ -142,46 +142,49 @@ function ShopPageContent() {
         setIsSending(true);
 
         try {
-            // Convert audio bubble to base64 to send as JSON as requested
-            const reader = new FileReader();
-            reader.readAsDataURL(audioBlob);
-            reader.onloadend = async () => {
-                const result = reader.result as string;
-                const base64Audio = result.split(",")[1];
+            const formData = new FormData();
 
-                const response = await fetch(process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || "", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    mode: "cors",
-                    body: JSON.stringify({
-                        customer_name: customerName,
-                        customer_phone: customerPhone,
-                        shop_id: id,
-                        audio: base64Audio,
-                        mime_type: mimeTypeRef.current, // Send mime type to help backend
-                        latitude: location?.lat || null,
-                        longitude: location?.lng || null,
-                        status: "pending"
-                    }),
-                });
+            // 2. Append the Audio properly: Standard file, not Base64
+            // Using a generic extension based on mimeType would be better, but 'order.audio' works
+            const extension = mimeTypeRef.current.includes('mp4') ? 'm4a' : 'webm';
+            formData.append("audio", audioBlob, `order.${extension}`);
 
-                if (response.ok) {
-                    // 1. Reset State on Send: Flush everything immediately
-                    setAudioBlob(null);
-                    setAudioUrl(null);
-                    audioChunksRef.current = [];
-                    setIsSubmitted(true);
-                } else {
-                    console.error("Failed to send order:", response.status);
-                    alert("Failed to send order. Please try again.");
-                }
-                setIsSending(false);
-            };
+            // 3. Append the Metadata
+            formData.append("shop_id", id);
+            formData.append("customer_name", customerName);
+            formData.append("customer_phone", customerPhone);
+            formData.append("latitude", (location?.lat || "").toString());
+            formData.append("longitude", (location?.lng || "").toString());
+            formData.append("status", "pending");
+            formData.append("mime_type", mimeTypeRef.current);
+
+            // 5. Debug Logging: Verify keys before sending
+            console.log("Submitting FormData with keys:");
+            for (const key of (formData as any).keys()) {
+                console.log(` - ${key}`);
+            }
+
+            const response = await fetch(process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || "", {
+                method: "POST",
+                body: formData,
+                // Note: Fetch sets the Boundary automatically when body is FormData
+                mode: "cors",
+            });
+
+            if (response.ok) {
+                // 4. State Reset: Clear everything immediately
+                setAudioBlob(null);
+                setAudioUrl(null);
+                audioChunksRef.current = [];
+                setIsSubmitted(true);
+            } else {
+                console.error("Failed to send order:", response.status);
+                alert("Failed to send order. Please try again.");
+            }
         } catch (error) {
             console.error("Error sending order:", error);
             alert("An error occurred. Please try again.");
+        } finally {
             setIsSending(false);
         }
     };
