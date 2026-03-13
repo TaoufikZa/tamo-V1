@@ -242,9 +242,9 @@ export default function OrderPage() {
                     <div className="flex justify-between items-start mb-4">
                         <div className="flex flex-col">
                             <p className="text-gray-500 font-bold mb-1">Customer</p>
-                            {order.customer_name && (
+                            {order.customer_name ? (
                                 <p className="text-tamo-dark font-medium text-lg capitalize">{order.customer_name}</p>
-                            )}
+                            ) : null}
                         </div>
                         {order.latitude && order.longitude && (
                             <a
@@ -269,6 +269,16 @@ export default function OrderPage() {
                         Customer Audio
                     </p>
                     <audio controls preload="metadata" src={order.audio_url} className="w-full" />
+                    <div className="mt-2 text-right">
+                        <a
+                            href={order.audio_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-gray-400 hover:text-tamo-dark underline font-medium"
+                        >
+                            Audio not playing? Open in new tab
+                        </a>
+                    </div>
                 </div>
 
                 {/* Action Phase: Pending -> Accept/Decline */}

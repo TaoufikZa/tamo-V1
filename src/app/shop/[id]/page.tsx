@@ -127,6 +127,8 @@ function ShopPageContent() {
 
     const stopRecording = () => {
         if (mediaRecorderRef.current && isRecording) {
+            // Force data request to ensure all chunks are captured before stopping
+            mediaRecorderRef.current.requestData();
             mediaRecorderRef.current.stop();
             setIsRecording(false);
             if (timerRef.current) clearInterval(timerRef.current);
@@ -156,6 +158,7 @@ function ShopPageContent() {
                         customer_phone: customerPhone,
                         shop_id: id,
                         audio: base64Audio,
+                        mime_type: mimeTypeRef.current, // Send mime type to help backend
                         latitude: location?.lat || null,
                         longitude: location?.lng || null,
                         status: "pending"
