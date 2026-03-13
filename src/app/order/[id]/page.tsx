@@ -1,5 +1,8 @@
 "use client";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
@@ -268,10 +271,16 @@ export default function OrderPage() {
                         </svg>
                         Customer Audio
                     </p>
-                    <audio controls preload="metadata" src={order.audio_url} className="w-full" />
+                    <audio
+                        key={order.audio_url}
+                        controls
+                        preload="metadata"
+                        src={`${order.audio_url}?cb=${Date.now()}`}
+                        className="w-full"
+                    />
                     <div className="mt-2 text-right">
                         <a
-                            href={order.audio_url}
+                            href={`${order.audio_url}?cb=${Date.now()}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-xs text-gray-400 hover:text-tamo-dark underline font-medium"
