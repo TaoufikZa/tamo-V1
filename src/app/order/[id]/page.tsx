@@ -242,8 +242,10 @@ export default function OrderPage() {
                     <div className="flex justify-between items-start mb-4">
                         <div className="flex flex-col">
                             <p className="text-gray-500 font-bold mb-1">Customer</p>
-                            <p className="text-tamo-dark font-medium text-lg">{order.customer_name}</p>
-                            <p className="text-gray-400 font-mono text-sm">{order.customer_phone}</p>
+                            {order.customer_name && (
+                                <p className="text-tamo-dark font-medium text-lg capitalize">{order.customer_name}</p>
+                            )}
+                            <p className="text-gray-400 font-mono text-sm">{order.customer_phone || "No phone provided"}</p>
                         </div>
                         {order.latitude && order.longitude && (
                             <a
