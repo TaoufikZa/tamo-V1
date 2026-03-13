@@ -31,6 +31,7 @@ export default function ShopPage() {
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<BlobPart[]>([]);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const mimeTypeRef = useRef<string>("");
 
     useEffect(() => {
         // Request geolocation early to avoid delays
@@ -52,6 +53,23 @@ export default function ShopPage() {
         };
     }, []);
 
+    const getSupportedMimeType = () => {
+        const types = [
+            'audio/webm;codecs=opus',
+            'audio/webm',
+            'audio/ogg;codecs=opus',
+            'audio/mp4',
+            'audio/aac',
+        ];
+
+        for (const type of types) {
+            if (MediaRecorder.isTypeSupported(type)) {
+                return type;
+            }
+        }
+        return "";
+    };
+
     const startRecording = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -62,7 +80,14 @@ export default function ShopPage() {
                 return;
             }
 
-            const mediaRecorder = new MediaRecorder(stream);
+            const supportedMimeType = getSupportedMimeType();
+            if (!supportedMimeType) {
+                alert("No supported audio recording format found in this browser.");
+                return;
+            }
+            mimeTypeRef.current = supportedMimeType;
+
+            const mediaRecorder = new MediaRecorder(stream, { mimeType: supportedMimeType });
             mediaRecorderRef.current = mediaRecorder;
             audioChunksRef.current = [];
 
@@ -73,7 +98,7 @@ export default function ShopPage() {
             };
 
             mediaRecorder.onstop = () => {
-                const newAudioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+                const newAudioBlob = new Blob(audioChunksRef.current, { type: mimeTypeRef.current });
                 const url = URL.createObjectURL(newAudioBlob);
                 setAudioBlob(newAudioBlob);
                 setAudioUrl(url);
