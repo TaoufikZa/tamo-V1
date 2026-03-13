@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 // Initialize Supabase Client
@@ -18,15 +17,14 @@ interface Order {
     customer_phone: string;
     latitude: number | null;
     longitude: number | null;
+    amount?: number;
 }
 
 export default function OrderClient({ initialOrder, id }: { initialOrder: Order, id: string }) {
-    const router = useRouter();
     const [order, setOrder] = useState<Order>(initialOrder);
-    const [loading, setLoading] = useState(false);
     const [amount, setAmount] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [audioSrc, setAudioSrc] = useState<string>(`${initialOrder.audio_url}?cb=${Date.now()}`);
+    const [audioSrc] = useState<string>(`${initialOrder.audio_url}?cb=${Date.now()}`);
 
     const handleAcceptOrder = () => {
         setOrder({ ...order, status: "pricing" });

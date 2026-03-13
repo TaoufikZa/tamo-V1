@@ -1,6 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
 import OrderClient from "./OrderClient";
-import { redirect } from "next/navigation";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
