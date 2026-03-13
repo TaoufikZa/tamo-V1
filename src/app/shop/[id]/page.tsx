@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useState, useRef, useEffect, Suspense } from "react";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 
 // Mock Data
 const MOCK_SHOPS = [
@@ -11,11 +11,16 @@ const MOCK_SHOPS = [
     { id: "taoufik-shop", name: "Taoufik Shop", type: "General Store", distance: "600m", phone: "212601866049" },
 ];
 
-export default function ShopPage() {
+function ShopPageContent() {
     const router = useRouter();
     const params = useParams();
+    const searchParams = useSearchParams();
     const id = params.id as string;
     const shop = MOCK_SHOPS.find((s) => s.id === id) || MOCK_SHOPS[0];
+
+    // Capture customer data from URL params
+    const customerName = searchParams.get("name") || "";
+    const customerPhone = searchParams.get("phone") || "";
 
     const [isRecording, setIsRecording] = useState(false);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -145,6 +150,8 @@ export default function ShopPage() {
                     },
                     mode: "cors",
                     body: JSON.stringify({
+                        customer_name: customerName,
+                        customer_phone: customerPhone,
                         shop_id: id,
                         audio: base64Audio,
                         latitude: location?.lat || null,
@@ -277,5 +284,18 @@ export default function ShopPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function ShopPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex flex-col items-center justify-center p-8 flex-1 mt-20">
+                <div className="w-16 h-16 border-4 border-tamo-lime border-t-transparent rounded-full animate-spin mb-6 shadow-lg"></div>
+                <p className="text-center font-medium text-lg text-tamo-dark">Loading shop...</p>
+            </div>
+        }>
+            <ShopPageContent />
+        </Suspense>
     );
 }
