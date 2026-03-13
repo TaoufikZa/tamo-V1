@@ -269,7 +269,7 @@ export default function OrderPage() {
                         </svg>
                         Customer Audio
                     </p>
-                    <audio controls src={order.audio_url} className="w-full" />
+                    <audio controls preload="metadata" src={order.audio_url} className="w-full" />
                 </div>
 
                 {/* Action Phase: Pending -> Accept/Decline */}

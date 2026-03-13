@@ -113,7 +113,8 @@ function ShopPageContent() {
             setRecordingTime(0);
             setAudioUrl(null);
             setAudioBlob(null);
-            mediaRecorder.start();
+            // Use a timeslice (100ms) to ensure data is captured reliably on mobile browsers
+            mediaRecorder.start(100);
 
             timerRef.current = setInterval(() => {
                 setRecordingTime((prev) => prev + 1);
@@ -245,6 +246,13 @@ function ShopPageContent() {
                             )}
                         </button>
 
+                        <div className="flex flex-col mt-8 items-center">
+                            <p className="text-gray-500 font-bold mb-1">Customer</p>
+                            <p className="text-tamo-dark font-medium text-lg capitalize">
+                                {customerName || ""}
+                            </p>
+                            {/* Hidden phone number display as requested, keeping it in data for webhooks */}
+                        </div>
                         {isRecording ? (
                             <div className="mt-8 text-2xl font-mono font-bold text-red-500 animate-pulse">
                                 {formatTime(recordingTime)}
