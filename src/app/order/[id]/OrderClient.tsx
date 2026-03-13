@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 // Data Type
@@ -20,7 +20,10 @@ export default function OrderClient({ initialOrder, id }: { initialOrder: Order,
     const [order, setOrder] = useState<Order>(initialOrder);
     const [amount, setAmount] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [audioSrc] = useState<string>(`${initialOrder.audio_url}?cb=${Date.now()}`);
+
+    // 3. Browser Cache Busting: Memoizeed to only change when the URL itself changes
+    // This prevents the audio from resetting while the merchant is typing the price.
+    const audioSrc = useMemo(() => `${order.audio_url}?cb=${Date.now()}`, [order.audio_url]);
 
     // Lazy initialize supabase client
     const getSupabase = () => {
@@ -188,7 +191,7 @@ export default function OrderClient({ initialOrder, id }: { initialOrder: Order,
                         Customer Audio
                     </p>
                     <audio
-                        key={audioSrc}
+                        key={order.audio_url} // 2. React State / Component Re-mounting
                         controls
                         preload="metadata"
                         src={audioSrc}
