@@ -15,6 +15,10 @@ interface Order {
     shop_id: string;
     audio_url: string;
     status: "pending" | "pricing" | "accepted" | "rejected";
+    customer_name: string;
+    customer_phone: string;
+    latitude: number | null;
+    longitude: number | null;
 }
 
 export default function OrderPage() {
@@ -33,8 +37,8 @@ export default function OrderPage() {
             try {
                 const { data, error } = await supabase
                     .from("orders")
-                    .select("*")
-                    .eq("id", params.id)
+                    .select("id, shop_id, audio_url, status, customer_name, customer_phone, latitude, longitude")
+                    .eq("id", id)
                     .single();
 
                 if (error) {
@@ -71,7 +75,7 @@ export default function OrderPage() {
                     status: "rejected",
                     amount: 0
                 })
-                .eq("id", params.id);
+                .eq("id", id);
 
             if (supabaseError) {
                 console.error("Supabase update error:", supabaseError);
@@ -87,10 +91,12 @@ export default function OrderPage() {
                 },
                 mode: "cors",
                 body: JSON.stringify({
-                    order_id: params.id,
+                    order_id: id,
                     shop_id: order.shop_id,
                     status: "rejected",
-                    amount: 0
+                    amount: 0,
+                    customer_name: order.customer_name,
+                    customer_phone: order.customer_phone
                 }),
             });
 
@@ -123,7 +129,7 @@ export default function OrderPage() {
                     status: "accepted",
                     amount: numericAmount
                 })
-                .eq("id", params.id);
+                .eq("id", id);
 
             if (supabaseError) {
                 console.error("Supabase update error:", supabaseError);
@@ -143,7 +149,9 @@ export default function OrderPage() {
                     order_id: id,
                     shop_id: order?.shop_id || "1",
                     status: "accepted",
-                    amount: numericAmount
+                    amount: numericAmount,
+                    customer_name: order?.customer_name,
+                    customer_phone: order?.customer_phone
                 }),
             });
 
@@ -231,7 +239,29 @@ export default function OrderPage() {
             <div className="flex flex-col flex-1">
                 {/* Listen Phase */}
                 <div className="w-full flex flex-col mb-8 bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                    <p className="text-gray-500 font-medium mb-4 flex items-center gap-2">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="flex flex-col">
+                            <p className="text-gray-500 font-bold mb-1">Customer</p>
+                            <p className="text-tamo-dark font-medium text-lg">{order.customer_name}</p>
+                            <p className="text-gray-400 font-mono text-sm">{order.customer_phone}</p>
+                        </div>
+                        {order.latitude && order.longitude && (
+                            <a
+                                href={`https://www.google.com/maps?q=${order.latitude},${order.longitude}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-tamo-lime bg-tamo-dark px-3 py-2 rounded-lg text-sm font-bold shadow-sm"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                                </svg>
+                                View Location
+                            </a>
+                        )}
+                    </div>
+
+                    <p className="text-gray-500 font-medium mb-4 flex items-center gap-2 border-t pt-4 border-gray-100">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
                         </svg>

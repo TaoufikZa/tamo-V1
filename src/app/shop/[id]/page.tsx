@@ -21,6 +21,8 @@ export default function ShopPage() {
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
     const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
     const [customerPhone, setCustomerPhone] = useState("");
+    const [customerName, setCustomerName] = useState("");
+    const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [recordingTime, setRecordingTime] = useState(0);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isSending, setIsSending] = useState(false);
@@ -31,8 +33,21 @@ export default function ShopPage() {
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
+        // Request geolocation early to avoid delays
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setLocation({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                    });
+                },
+                (error) => console.error("Geolocation error:", error),
+                { enableHighAccuracy: true }
+            );
+        }
+
         return () => {
-            // Cleanup timer on unmount
             if (timerRef.current) clearInterval(timerRef.current);
         };
     }, []);
@@ -40,6 +55,13 @@ export default function ShopPage() {
     const startRecording = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+            // Explicitly check for MediaRecorder support
+            if (typeof MediaRecorder === 'undefined') {
+                alert("Audio recording is not supported in this browser.");
+                return;
+            }
+
             const mediaRecorder = new MediaRecorder(stream);
             mediaRecorderRef.current = mediaRecorder;
             audioChunksRef.current = [];
@@ -55,6 +77,8 @@ export default function ShopPage() {
                 const url = URL.createObjectURL(newAudioBlob);
                 setAudioBlob(newAudioBlob);
                 setAudioUrl(url);
+                // Stop tracks to release microphone
+                stream.getTracks().forEach(track => track.stop());
             };
 
             setIsRecording(true);
@@ -68,7 +92,7 @@ export default function ShopPage() {
             }, 1000);
         } catch (error) {
             console.error("Error accessing microphone:", error);
-            alert("Microphone access is required to use this feature.");
+            alert("Microphone access is required. Please check your browser permissions.");
         }
     };
 
@@ -77,14 +101,12 @@ export default function ShopPage() {
             mediaRecorderRef.current.stop();
             setIsRecording(false);
             if (timerRef.current) clearInterval(timerRef.current);
-            // Stop all audio tracks
-            mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
         }
     };
 
     const handleSendOrder = async () => {
-        if (!audioBlob || !customerPhone) {
-            alert("Please enter your phone number.");
+        if (!audioBlob || !customerPhone || !customerName) {
+            alert("Please fill in all details.");
             return;
         }
         setIsSending(true);
@@ -103,9 +125,12 @@ export default function ShopPage() {
                     },
                     mode: "cors",
                     body: JSON.stringify({
+                        customer_name: customerName,
                         customer_phone: customerPhone,
-                        shopId: params.id,
+                        shop_id: id,
                         audio: base64Audio,
+                        latitude: location?.lat || null,
+                        longitude: location?.lng || null,
                         status: "pending"
                     }),
                 });
@@ -113,14 +138,14 @@ export default function ShopPage() {
                 if (response.ok) {
                     setIsSubmitted(true);
                 } else {
-                    console.error("Failed to send order, status:", response.status);
+                    console.error("Failed to send order:", response.status);
                     alert("Failed to send order. Please try again.");
                 }
                 setIsSending(false);
             };
         } catch (error) {
             console.error("Error sending order:", error);
-            alert("An error occurred while sending your order. Please try again.");
+            alert("An error occurred. Please try again.");
             setIsSending(false);
         }
     };
@@ -214,6 +239,21 @@ export default function ShopPage() {
 
                         <div className="flex flex-col w-full space-y-4 mt-8">
                             <div className="flex flex-col space-y-2 w-full">
+                                <label htmlFor="customerName" className="text-sm font-bold text-tamo-dark text-left w-full">
+                                    Your Full Name
+                                </label>
+                                <input
+                                    id="customerName"
+                                    type="text"
+                                    placeholder="Enter your name..."
+                                    required
+                                    value={customerName}
+                                    onChange={(e) => setCustomerName(e.target.value)}
+                                    className="w-full p-4 rounded-xl border-2 border-gray-100 focus:border-tamo-lime focus:outline-none transition-colors"
+                                />
+                            </div>
+
+                            <div className="flex flex-col space-y-2 w-full">
                                 <label htmlFor="customerPhone" className="text-sm font-bold text-tamo-dark text-left w-full">
                                     Your Phone Number (WhatsApp)
                                 </label>
@@ -230,8 +270,8 @@ export default function ShopPage() {
 
                             <button
                                 onClick={handleSendOrder}
-                                disabled={isSending || !customerPhone}
-                                className={`w-full py-4 rounded-xl font-bold text-lg transition-transform text-tamo-lime bg-tamo-dark ${isSending || !customerPhone ? "opacity-75 cursor-not-allowed" : "hover:scale-[1.02] active:scale-95 shadow-md"
+                                disabled={isSending || !customerPhone || !customerName}
+                                className={`w-full py-4 rounded-xl font-bold text-lg transition-transform text-tamo-lime bg-tamo-dark ${isSending || !customerPhone || !customerName ? "opacity-75 cursor-not-allowed" : "hover:scale-[1.02] active:scale-95 shadow-md"
                                     }`}
                             >
                                 {isSending ? "Sending..." : "Send Order"}
