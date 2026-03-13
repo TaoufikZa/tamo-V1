@@ -20,8 +20,6 @@ export default function ShopPage() {
     const [isRecording, setIsRecording] = useState(false);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
     const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-    const [customerPhone, setCustomerPhone] = useState("");
-    const [customerName, setCustomerName] = useState("");
     const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [recordingTime, setRecordingTime] = useState(0);
     const [isSubmitted, setIsSubmitted] = useState(false);
