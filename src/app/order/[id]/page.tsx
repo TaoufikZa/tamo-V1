@@ -4,11 +4,7 @@ import OrderClient from "./OrderClient";
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// Initialize Supabase Client (Server-side)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
-
+// Data Type
 interface Order {
     id: string;
     shop_id: string;
@@ -23,6 +19,16 @@ interface Order {
 
 export default async function OrderPage({ params }: { params: { id: string } }) {
     const { id } = params;
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+        console.error("Supabase environment variables are missing.");
+        return <div>Configuration error. Please check environment variables.</div>;
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { data, error } = await supabase
         .from("orders")
@@ -39,8 +45,6 @@ export default async function OrderPage({ params }: { params: { id: string } }) 
             </div>
         );
     }
-
-    const order = data as Order;
 
     return <OrderClient initialOrder={order} id={id} />;
 }

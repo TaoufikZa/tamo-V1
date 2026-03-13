@@ -3,11 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-// Initialize Supabase Client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
-
+// Data Type
 interface Order {
     id: string;
     shop_id: string;
@@ -26,6 +22,16 @@ export default function OrderClient({ initialOrder, id }: { initialOrder: Order,
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [audioSrc] = useState<string>(`${initialOrder.audio_url}?cb=${Date.now()}`);
 
+    // Lazy initialize supabase client
+    const getSupabase = () => {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        if (!supabaseUrl || !supabaseKey) {
+            throw new Error("Supabase environment variables are missing.");
+        }
+        return createClient(supabaseUrl, supabaseKey);
+    };
+
     const handleAcceptOrder = () => {
         setOrder({ ...order, status: "pricing" });
     };
@@ -33,6 +39,7 @@ export default function OrderClient({ initialOrder, id }: { initialOrder: Order,
     const handleDeclineOrder = async () => {
         setIsSubmitting(true);
         try {
+            const supabase = getSupabase();
             const { error: supabaseError } = await supabase
                 .from("orders")
                 .update({ status: "rejected", amount: 0 })
@@ -74,6 +81,7 @@ export default function OrderClient({ initialOrder, id }: { initialOrder: Order,
 
         setIsSubmitting(true);
         try {
+            const supabase = getSupabase();
             const { error: supabaseError } = await supabase
                 .from("orders")
                 .update({ status: "accepted", amount: numericAmount })
