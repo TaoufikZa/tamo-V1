@@ -160,9 +160,9 @@ function ShopPageContent() {
 
             // 5. Debug Logging: Verify keys before sending
             console.log("Submitting FormData with keys:");
-            for (const key of (formData as any).keys()) {
+            formData.forEach((_, key) => {
                 console.log(` - ${key}`);
-            }
+            });
 
             const response = await fetch(process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || "", {
                 method: "POST",
