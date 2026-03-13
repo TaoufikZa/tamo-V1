@@ -142,7 +142,8 @@ function ShopPageContent() {
             const reader = new FileReader();
             reader.readAsDataURL(audioBlob);
             reader.onloadend = async () => {
-                const base64Audio = reader.result;
+                const result = reader.result as string;
+                const base64Audio = result.split(",")[1];
 
                 const response = await fetch(process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || "", {
                     method: "POST",

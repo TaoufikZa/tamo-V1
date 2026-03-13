@@ -245,7 +245,6 @@ export default function OrderPage() {
                             {order.customer_name && (
                                 <p className="text-tamo-dark font-medium text-lg capitalize">{order.customer_name}</p>
                             )}
-                            <p className="text-gray-400 font-mono text-sm">{order.customer_phone || "No phone provided"}</p>
                         </div>
                         {order.latitude && order.longitude && (
                             <a
