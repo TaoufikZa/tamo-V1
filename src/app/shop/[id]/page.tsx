@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 
 // Mock Data
 const MOCK_SHOPS = [
@@ -11,9 +11,11 @@ const MOCK_SHOPS = [
     { id: "taoufik-shop", name: "Taoufik Shop", type: "General Store", distance: "600m", phone: "212601866049" },
 ];
 
-export default function ShopPage({ params }: { params: { id: string } }) {
+export default function ShopPage() {
     const router = useRouter();
-    const shop = MOCK_SHOPS.find((s) => s.id === params.id) || MOCK_SHOPS[0];
+    const params = useParams();
+    const id = params.id as string;
+    const shop = MOCK_SHOPS.find((s) => s.id === id) || MOCK_SHOPS[0];
 
     const [isRecording, setIsRecording] = useState(false);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);

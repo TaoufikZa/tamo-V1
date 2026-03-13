@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 
 // Initialize Supabase Client
@@ -17,8 +17,10 @@ interface Order {
     status: "pending" | "pricing" | "accepted" | "rejected";
 }
 
-export default function OrderPage({ params }: { params: { id: string } }) {
+export default function OrderPage() {
     const router = useRouter();
+    const params = useParams();
+    const id = params.id as string;
 
     const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState(true);
@@ -49,7 +51,7 @@ export default function OrderPage({ params }: { params: { id: string } }) {
         };
 
         fetchOrder();
-    }, [params.id]);
+    }, [id]);
 
     const handleAcceptOrder = () => {
         if (order) {
@@ -138,7 +140,7 @@ export default function OrderPage({ params }: { params: { id: string } }) {
                 },
                 mode: "cors",
                 body: JSON.stringify({
-                    order_id: params.id,
+                    order_id: id,
                     shop_id: order?.shop_id || "1",
                     status: "accepted",
                     amount: numericAmount
