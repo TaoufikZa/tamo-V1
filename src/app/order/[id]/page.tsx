@@ -33,6 +33,7 @@ export default function OrderPage() {
     const [loading, setLoading] = useState(true);
     const [amount, setAmount] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [audioSrc, setAudioSrc] = useState<string>("");
 
     // 🚀 REAL DATA FETCHING
     useEffect(() => {
@@ -48,7 +49,10 @@ export default function OrderPage() {
                     console.error("Error fetching order:", error);
                     setOrder(null);
                 } else if (data) {
-                    setOrder(data as Order);
+                    const typedData = data as Order;
+                    setOrder(typedData);
+                    // Generate stable cache-busted URL
+                    setAudioSrc(`${typedData.audio_url}?cb=${Date.now()}`);
                 }
             } catch (err) {
                 console.error("Unexpected error:", err);
@@ -272,15 +276,15 @@ export default function OrderPage() {
                         Customer Audio
                     </p>
                     <audio
-                        key={order.audio_url}
+                        key={audioSrc}
                         controls
                         preload="metadata"
-                        src={`${order.audio_url}?cb=${Date.now()}`}
+                        src={audioSrc}
                         className="w-full"
                     />
                     <div className="mt-2 text-right">
                         <a
-                            href={`${order.audio_url}?cb=${Date.now()}`}
+                            href={audioSrc}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-xs text-gray-400 hover:text-tamo-dark underline font-medium"
