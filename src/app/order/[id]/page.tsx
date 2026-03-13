@@ -14,7 +14,7 @@ interface Order {
     id: string;
     shop_id: string;
     audio_url: string;
-    status: "pending" | "pricing" | "accepted" | "declined";
+    status: "pending" | "pricing" | "accepted" | "rejected";
 }
 
 export default function OrderPage({ params }: { params: { id: string } }) {
@@ -57,9 +57,52 @@ export default function OrderPage({ params }: { params: { id: string } }) {
         }
     };
 
-    const handleDeclineOrder = () => {
-        if (order) {
-            setOrder({ ...order, status: "declined" });
+    const handleDeclineOrder = async () => {
+        if (!order) return;
+
+        setIsSubmitting(true);
+        try {
+            // 1. Update Supabase
+            const { error: supabaseError } = await supabase
+                .from("orders")
+                .update({
+                    status: "rejected",
+                    amount: 0
+                })
+                .eq("id", params.id);
+
+            if (supabaseError) {
+                console.error("Supabase update error:", supabaseError);
+                alert("Failed to update order in database.");
+                return;
+            }
+
+            // 2. 🚀 Trigger the merchant reply webhook (Rejected)
+            const response = await fetch(process.env.NEXT_PUBLIC_N8N_MERCHANT_REPLY_WEBHOOK_URL || "", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                mode: "cors",
+                body: JSON.stringify({
+                    order_id: params.id,
+                    shop_id: order.shop_id,
+                    status: "rejected",
+                    amount: 0
+                }),
+            });
+
+            if (response.ok) {
+                setOrder({ ...order, status: "rejected" });
+            } else {
+                console.error("Failed to send to n8n merchant-reply");
+                alert("Order saved, but failed to notify customer. Please check n8n.");
+            }
+        } catch (error) {
+            console.error("Process error:", error);
+            alert("A network error occurred.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -80,43 +123,6 @@ export default function OrderPage({ params }: { params: { id: string } }) {
                 })
                 .eq("id", params.id);
 
-            if (supabaseError) {
-                console.error("Supabase update error:", supabaseError);
-                alert("Failed to update order in database.");
-                return;
-            }
-
-            // 2. 🚀 Trigger the merchant response webhook!
-            const response = await fetch(process.env.NEXT_PUBLIC_N8N_MERCHANT_RESPONSE_WEBHOOK_URL || "", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                mode: "cors",
-                body: JSON.stringify({
-                    order_id: params.id,
-                    shop_id: order?.shop_id || "1",
-                    amount: numericAmount,
-                    status: "accepted"
-                }),
-            });
-
-            if (response.ok) {
-                // If n8n received it successfully, show the green success screen
-                if (order) {
-                    setOrder({
-                        ...order,
-                        status: "accepted"
-                    });
-                }
-            } else {
-                console.error("Failed to send to n8n merchant-response");
-                alert("Order saved, but failed to notify customer. Please check n8n.");
-            }
-        } catch (error) {
-            console.error("Process error:", error);
-            alert("A network error occurred.");
-        } finally {
             setIsSubmitting(false);
         }
     };
@@ -158,8 +164,8 @@ export default function OrderPage({ params }: { params: { id: string } }) {
         );
     }
 
-    // Declined State
-    if (order.status === "declined") {
+    // Rejected State
+    if (order.status === "rejected") {
         return (
             <div className="flex flex-col items-center justify-center p-8 flex-1 bg-white text-center">
                 <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center text-red-500 mb-6">
@@ -168,7 +174,7 @@ export default function OrderPage({ params }: { params: { id: string } }) {
                     </svg>
                 </div>
                 <h2 className="text-2xl font-bold text-tamo-dark mb-4">
-                    Order Declined
+                    Order Rejected
                 </h2>
                 <p className="text-gray-600 font-medium">
                     The customer will be notified that you cannot fulfill this order.
