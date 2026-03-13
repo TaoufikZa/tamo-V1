@@ -77,6 +77,9 @@ function ShopPageContent() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
+            // 2. Clear Recorder Chunks: Ensure array is empty before starting new recording
+            audioChunksRef.current = [];
+
             // Explicitly check for MediaRecorder support
             if (typeof MediaRecorder === 'undefined') {
                 alert("Audio recording is not supported in this browser.");
@@ -92,7 +95,6 @@ function ShopPageContent() {
 
             const mediaRecorder = new MediaRecorder(stream, { mimeType: supportedMimeType });
             mediaRecorderRef.current = mediaRecorder;
-            audioChunksRef.current = [];
 
             mediaRecorder.ondataavailable = (event) => {
                 if (event.data.size > 0) {
@@ -166,6 +168,10 @@ function ShopPageContent() {
                 });
 
                 if (response.ok) {
+                    // 1. Reset State on Send: Flush everything immediately
+                    setAudioBlob(null);
+                    setAudioUrl(null);
+                    audioChunksRef.current = [];
                     setIsSubmitted(true);
                 } else {
                     console.error("Failed to send order:", response.status);
