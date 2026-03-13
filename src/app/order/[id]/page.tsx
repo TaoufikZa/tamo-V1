@@ -45,6 +45,7 @@ export default async function OrderPage({ params }: { params: { id: string } }) 
             </div>
         );
     }
+    const order = data as Order;
 
     return <OrderClient initialOrder={order} id={id} />;
 }
