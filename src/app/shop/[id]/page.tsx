@@ -18,6 +18,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
     const [isRecording, setIsRecording] = useState(false);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
     const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+    const [customerPhone, setCustomerPhone] = useState("");
     const [recordingTime, setRecordingTime] = useState(0);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isSending, setIsSending] = useState(false);
@@ -80,29 +81,44 @@ export default function ShopPage({ params }: { params: { id: string } }) {
     };
 
     const handleSendOrder = async () => {
-        if (!audioBlob) return;
+        if (!audioBlob || !customerPhone) {
+            alert("Please enter your phone number.");
+            return;
+        }
         setIsSending(true);
 
         try {
-            const formData = new FormData();
-            formData.append("audio", audioBlob, "order.webm");
-            formData.append("shopId", params.id);
+            // Convert audio bubble to base64 to send as JSON as requested
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+            reader.onloadend = async () => {
+                const base64Audio = reader.result;
 
-            const response = await fetch("https://tamoit.app.n8n.cloud/webhook/a4839bf6-9651-4134-8225-b1c5c0ed6d55", {
-                method: "POST",
-                body: formData,
-            });
+                const response = await fetch(process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || "", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    mode: "cors",
+                    body: JSON.stringify({
+                        customer_phone: customerPhone,
+                        shopId: params.id,
+                        audio: base64Audio,
+                        status: "pending"
+                    }),
+                });
 
-            if (response.ok) {
-                setIsSubmitted(true);
-            } else {
-                console.error("Failed to send order, status:", response.status);
-                alert("Failed to send order. Please try again.");
-            }
+                if (response.ok) {
+                    setIsSubmitted(true);
+                } else {
+                    console.error("Failed to send order, status:", response.status);
+                    alert("Failed to send order. Please try again.");
+                }
+                setIsSending(false);
+            };
         } catch (error) {
             console.error("Error sending order:", error);
             alert("An error occurred while sending your order. Please try again.");
-        } finally {
             setIsSending(false);
         }
     };
@@ -194,11 +210,26 @@ export default function ShopPage({ params }: { params: { id: string } }) {
 
                         <audio controls src={audioUrl} className="w-full" />
 
-                        <div className="flex flex-col w-full space-y-3 mt-8">
+                        <div className="flex flex-col w-full space-y-4 mt-8">
+                            <div className="flex flex-col space-y-2 w-full">
+                                <label htmlFor="customerPhone" className="text-sm font-bold text-tamo-dark text-left w-full">
+                                    Your Phone Number (WhatsApp)
+                                </label>
+                                <input
+                                    id="customerPhone"
+                                    type="tel"
+                                    placeholder="212600000000"
+                                    required
+                                    value={customerPhone}
+                                    onChange={(e) => setCustomerPhone(e.target.value)}
+                                    className="w-full p-4 rounded-xl border-2 border-gray-100 focus:border-tamo-lime focus:outline-none transition-colors font-mono"
+                                />
+                            </div>
+
                             <button
                                 onClick={handleSendOrder}
-                                disabled={isSending}
-                                className={`w-full py-4 rounded-xl font-bold text-lg transition-transform text-tamo-lime bg-tamo-dark ${isSending ? "opacity-75 cursor-not-allowed" : "hover:scale-[1.02] active:scale-95 shadow-md"
+                                disabled={isSending || !customerPhone}
+                                className={`w-full py-4 rounded-xl font-bold text-lg transition-transform text-tamo-lime bg-tamo-dark ${isSending || !customerPhone ? "opacity-75 cursor-not-allowed" : "hover:scale-[1.02] active:scale-95 shadow-md"
                                     }`}
                             >
                                 {isSending ? "Sending..." : "Send Order"}

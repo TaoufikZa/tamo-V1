@@ -71,11 +71,12 @@ export default function OrderPage({ params }: { params: { id: string } }) {
 
         try {
             // 🚀 Send the data back to n8n!
-            const response = await fetch("https://tamoit.app.n8n.cloud/webhook/a4839bf6-9651-4134-8225-b1c5c0ed6d55", {
+            const response = await fetch(process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || "", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
+                mode: "cors",
                 body: JSON.stringify({
                     orderId: order?.id,
                     amount: amount,
