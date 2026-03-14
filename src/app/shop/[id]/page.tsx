@@ -23,11 +23,7 @@ function ShopPageContent() {
 
     useEffect(() => {
         const urlName = searchParams.get("name");
-        const urlPhone = searchParams.get("phone");
-
         const name = urlName || localStorage.getItem("tamo_customer_name") || "";
-        const phone = urlPhone || localStorage.getItem("tamo_customer_phone") || "";
-
         setCustomerName(name);
     }, [searchParams]);
 
