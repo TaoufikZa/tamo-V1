@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 // Mock Data
 const MOCK_SHOPS = [
@@ -11,12 +11,20 @@ const MOCK_SHOPS = [
   { id: "taoufik-shop", name: "Taoufik Shop", type: "General Store", distance: "600m", phone: "212601866049" },
 ];
 
-export default function Home() {
+function HomeContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [locationGranted, setLocationGranted] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // 1. Capture customer data from URL and persist to localStorage
+    const name = searchParams.get("name");
+    const phone = searchParams.get("phone");
+
+    if (name) localStorage.setItem("tamo_customer_name", name);
+    if (phone) localStorage.setItem("tamo_customer_phone", phone);
+
     // Request geolocation on mount
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -38,7 +46,7 @@ export default function Home() {
       setLocationGranted(true);
       setLoading(false);
     }
-  }, []);
+  }, [searchParams]);
 
   if (loading) {
     return (
@@ -58,7 +66,15 @@ export default function Home() {
           {MOCK_SHOPS.map((shop) => (
             <div
               key={shop.id}
-              onClick={() => router.push(`/shop/${shop.id}`)}
+              onClick={() => {
+                const params = new URLSearchParams();
+                const name = searchParams.get("name") || localStorage.getItem("tamo_customer_name");
+                const phone = searchParams.get("phone") || localStorage.getItem("tamo_customer_phone");
+                if (name) params.append("name", name);
+                if (phone) params.append("phone", phone);
+                const query = params.toString();
+                router.push(`/shop/${shop.id}${query ? `?${query}` : ""}`);
+              }}
               className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-100"
             >
               <div className="flex flex-col">
@@ -81,4 +97,17 @@ export default function Home() {
   }
 
   return null;
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center p-8 flex-1 mt-20">
+        <div className="w-16 h-16 bg-tamo-lime rounded-full animate-pulse mb-6 shadow-lg"></div>
+        <p className="text-center font-medium text-lg text-tamo-dark">Loading...</p>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
+  );
 }

@@ -18,9 +18,20 @@ function ShopPageContent() {
     const id = params.id as string;
     const shop = MOCK_SHOPS.find((s) => s.id === id) || MOCK_SHOPS[0];
 
-    // Capture customer data from URL params
-    const customerName = searchParams.get("name") || "";
-    const customerPhone = searchParams.get("phone") || "";
+    // Capture customer data from URL params with localStorage fallback
+    const [customerName, setCustomerName] = useState("");
+    const [customerPhone, setCustomerPhone] = useState("");
+
+    useEffect(() => {
+        const urlName = searchParams.get("name");
+        const urlPhone = searchParams.get("phone");
+
+        const name = urlName || localStorage.getItem("tamo_customer_name") || "";
+        const phone = urlPhone || localStorage.getItem("tamo_customer_phone") || "";
+
+        setCustomerName(name);
+        setCustomerPhone(phone);
+    }, [searchParams]);
 
     const [isRecording, setIsRecording] = useState(false);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
