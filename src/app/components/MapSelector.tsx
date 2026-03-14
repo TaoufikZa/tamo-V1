@@ -67,6 +67,23 @@ export default function MapSelector({ onConfirm, initialCenter = [33.5731, -7.58
 
     return (
         <div className="relative w-screen h-[100dvh] flex flex-col bg-gray-50">
+            {/* CTA at top — always visible, safe from iOS Safari bottom bar */}
+            <div className="flex-shrink-0 px-4 py-3 bg-white border-b border-gray-100 z-[1001] shadow-sm">
+                <button
+                    onClick={() => onConfirm(coords.lat, coords.lng)}
+                    type="button"
+                    className="w-full h-14 bg-tamo-dark text-tamo-lime rounded-2xl font-bold shadow-xl active:scale-[0.98] transition-all flex flex-row items-center justify-center gap-3 border border-tamo-lime/20"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 opacity-80">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                    </svg>
+                    <div className="flex flex-col items-start">
+                        <span className="text-base font-black leading-tight">تأكيد الموقع</span>
+                        <span className="text-[9px] font-bold opacity-70 uppercase tracking-widest">Confirmer la position</span>
+                    </div>
+                </button>
+            </div>
             <div className="relative flex-1">
                 <MapContainer
                     center={initialCenter}
@@ -105,21 +122,6 @@ export default function MapSelector({ onConfirm, initialCenter = [33.5731, -7.58
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
                     </svg>
-                </button>
-            </div>
-
-            {/* Fixed bottom CTA — always visible, safe area aware */}
-            <div
-                className="flex-shrink-0 px-6 pt-4 bg-white border-t border-gray-100 z-[1001]"
-                style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}
-            >
-                <button
-                    onClick={() => onConfirm(coords.lat, coords.lng)}
-                    type="button"
-                    className="w-full h-16 bg-tamo-dark text-tamo-lime rounded-2xl font-bold shadow-xl active:scale-[0.98] transition-all flex flex-col items-center justify-center border border-tamo-lime/20"
-                >
-                    <span className="text-lg font-black">تأكيد الموقع</span>
-                    <span className="text-[10px] font-bold opacity-70 uppercase tracking-widest">Confirmer la position</span>
                 </button>
             </div>
         </div>
