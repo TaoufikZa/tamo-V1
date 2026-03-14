@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 
 // Mock Data
 const MOCK_SHOPS = [
@@ -78,13 +79,15 @@ function HomeContent() {
               className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-100 overflow-hidden flex flex-col"
             >
               {/* Shop Image */}
-              <div className="relative h-32 w-full overflow-hidden">
-                <img
+              <div className="relative h-32 w-full overflow-hidden bg-gray-100">
+                <Image
                   src={shop.image}
                   alt={shop.name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  fill
+                  sizes="(max-width: 400px) 50vw, 200px"
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
                 />
-                <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-[10px] font-bold text-tamo-dark shadow-sm">
+                <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-[10px] font-bold text-tamo-dark shadow-sm z-10">
                   {shop.distance}
                 </div>
               </div>
@@ -106,6 +109,9 @@ function HomeContent() {
   }
 
   return null;
+}
+
+return null;
 }
 
 export default function Home() {
