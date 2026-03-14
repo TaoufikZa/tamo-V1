@@ -17,15 +17,32 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const [locationStatus, setLocationStatus] = useState<"pending" | "granted" | "denied" | "error">("pending");
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
+
+  const fetchIpLocation = async () => {
+    setLoading(true);
+    try {
+      const resp = await fetch("https://ipapi.co/json/");
+      const data = await resp.json();
+      if (data.latitude && data.longitude) {
+        localStorage.setItem("tamo_latitude", data.latitude.toString());
+        localStorage.setItem("tamo_longitude", data.longitude.toString());
+        setLocationStatus("granted");
+      } else {
+        throw new Error("Invalid IP location data");
+      }
+    } catch (e) {
+      console.error("IP Location Error:", e);
+      setLocationStatus("error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const requestLocation = () => {
     setLoading(true);
-    setErrorMessage("");
 
     if (!("geolocation" in navigator)) {
-      alert("Geolocation is not supported by your browser.");
-      setLoading(false);
+      fetchIpLocation();
       return;
     }
 
@@ -38,21 +55,10 @@ function HomeContent() {
         setLoading(false);
       },
       (error) => {
-        console.error("Geolocation error:", error);
-
-        // Temporary debug alert for iOS troubleshooting
-        alert(`GPS Error Code: ${error.code}\nMessage: ${error.message}`);
-
-        if (error.code === 1) { // PERMISSION_DENIED
-          setLocationStatus("denied");
-        } else {
-          // POSITION_UNAVAILABLE (2) or TIMEOUT (3)
-          setLocationStatus("error");
-          setErrorMessage(error.message);
-        }
-        setLoading(false);
+        console.warn("GPS failed, falling back to IP:", error);
+        fetchIpLocation();
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
     );
   };
 
@@ -103,36 +109,25 @@ function HomeContent() {
 
         <button
           onClick={requestLocation}
-          className="w-full max-w-xs h-24 bg-tamo-dark text-tamo-lime rounded-[20px] font-bold shadow-xl active:scale-[0.98] transition-all flex flex-col items-center justify-center border border-tamo-lime/20"
+          disabled={loading}
+          className="w-full max-w-xs h-24 bg-tamo-dark text-tamo-lime rounded-[20px] font-bold shadow-xl active:scale-[0.98] transition-all flex flex-col items-center justify-center border border-tamo-lime/20 disabled:opacity-80"
         >
           <span className="text-2xl mb-1">
-            {locationStatus === "error" ? "إعادة المحاولة" : "تفعيل الموقع"}
+            {loading ? "جاري تحديد الموقع..." : "تفعيل الموقع"}
           </span>
           <span className="text-sm font-medium opacity-80 uppercase tracking-wider">
-            {locationStatus === "error" ? "Réessayer" : "Activer la localisation"}
+            {loading ? "Recherche en cours..." : "Activer la localisation"}
           </span>
         </button>
-
-        {locationStatus === "denied" && (
-          <div className="mt-8 p-4 bg-red-50 rounded-xl border border-red-100 mx-4">
-            <p className="text-red-600 font-bold mb-1">تم حظر الوصول إلى الموقع</p>
-            <p className="text-red-500 text-xs font-medium uppercase tracking-tight mb-3">Localisation bloquée</p>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              يرجى تفعيل GPS في إعدادات المتصفح وإعادة تحميل الصفحة
-              <br />
-              <span className="text-xs italic">Veuillez activer le GPS dans les réglages et actualiser la page</span>
-            </p>
-          </div>
-        )}
 
         {locationStatus === "error" && (
           <div className="mt-8 p-4 bg-orange-50 rounded-xl border border-orange-100 mx-4">
             <p className="text-orange-600 font-bold mb-1">تعذر تحديد الموقع</p>
-            <p className="text-orange-500 text-xs font-medium uppercase tracking-tight mb-3">Signal GPS faible</p>
+            <p className="text-orange-500 text-xs font-medium uppercase tracking-tight mb-3">Signal faible</p>
             <p className="text-gray-600 text-sm leading-relaxed">
-              {errorMessage || "يرجى التحقق من اتصالك والمحاولة مرة أخرى"}
+              يرجى التحقق من اتصالك والمحاولة مرة أخرى
               <br />
-              <span className="text-xs italic">Veuillez vérifier votre signal et réessayer</span>
+              <span className="text-xs italic">Veuillez vérifier votre connexion et réessayer</span>
             </p>
           </div>
         )}
