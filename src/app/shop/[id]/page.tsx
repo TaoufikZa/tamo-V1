@@ -164,12 +164,15 @@ function ShopPageContent() {
                 localStorage.getItem("userPhone") ||
                 "";
 
-            // Geolocation: Use current state, but try to fallback to navigator if state is null
-            let lat = location?.lat || "";
-            let lng = location?.lng || "";
+            // Geolocation: Pull from localStorage (Saved by Home Gateway)
+            const storedLat = localStorage.getItem("tamo_latitude");
+            const storedLng = localStorage.getItem("tamo_longitude");
+
+            let lat = storedLat || location?.lat || "";
+            let lng = storedLng || location?.lng || "";
 
             if (!lat || !lng) {
-                // Last ditch effort to get location if state lagged
+                // Last ditch effort if localStorage was cleared
                 try {
                     const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
                         navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000 });
@@ -177,7 +180,7 @@ function ShopPageContent() {
                     lat = pos.coords.latitude.toString();
                     lng = pos.coords.longitude.toString();
                 } catch (e) {
-                    console.warn("Retried geolocation failed:", e);
+                    console.warn("Final fallback location failed:", e);
                 }
             }
 
