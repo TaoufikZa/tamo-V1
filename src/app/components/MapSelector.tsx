@@ -66,7 +66,7 @@ export default function MapSelector({ onConfirm, initialCenter = [33.5731, -7.58
     };
 
     return (
-        <div className="relative w-screen h-screen flex flex-col bg-gray-50">
+        <div className="relative w-screen h-[100dvh] flex flex-col bg-gray-50">
             <div className="relative flex-1">
                 <MapContainer
                     center={initialCenter}
@@ -108,8 +108,11 @@ export default function MapSelector({ onConfirm, initialCenter = [33.5731, -7.58
                 </button>
             </div>
 
-            {/* Fixed bottom CTA — always visible */}
-            <div className="flex-shrink-0 px-6 py-4 bg-white border-t border-gray-100 z-[1001]">
+            {/* Fixed bottom CTA — always visible, safe area aware */}
+            <div
+                className="flex-shrink-0 px-6 pt-4 bg-white border-t border-gray-100 z-[1001]"
+                style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}
+            >
                 <button
                     onClick={() => onConfirm(coords.lat, coords.lng)}
                     type="button"
