@@ -6,7 +6,7 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 
 // Dynamically import Map component to prevent SSR errors
-const LocationMap = dynamic(() => import("./components/LocationMap"), {
+const MapSelector = dynamic(() => import("./components/MapSelector"), {
   ssr: false,
   loading: () => (
     <div className="flex flex-col items-center justify-center p-8 flex-1 mt-20 text-center">
@@ -74,7 +74,7 @@ function HomeContent() {
   }
 
   if (view === "map") {
-    return <LocationMap onConfirm={handleConfirmLocation} />;
+    return <MapSelector onConfirm={handleConfirmLocation} />;
   }
 
   return (

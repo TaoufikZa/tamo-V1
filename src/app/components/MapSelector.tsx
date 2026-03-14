@@ -2,15 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, useMap, useMapEvents } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-interface LocationMapProps {
+// Leaflet CSS inside the client-only component
+import "leaflet/dist/leaflet.css";
+
+interface MapSelectorProps {
     onConfirm: (lat: number, lng: number) => void;
     initialCenter?: [number, number];
 }
 
-// Helper to bridge the map instance to the parent
+// MapController: Helper to bridge the map instance and handle movements
 function MapController({
     onMapReady,
     onMove
@@ -36,24 +38,23 @@ function MapController({
     return null;
 }
 
-export default function LocationMap({ onConfirm, initialCenter = [33.5731, -7.5898] }: LocationMapProps) {
+export default function MapSelector({ onConfirm, initialCenter = [33.5731, -7.5898] }: MapSelectorProps) {
     const [map, setMap] = useState<L.Map | null>(null);
     const [coords, setCoords] = useState<{ lat: number; lng: number }>({
         lat: initialCenter[0],
         lng: initialCenter[1],
     });
 
+    // Safe browser-only Leaflet initialization
     useEffect(() => {
         // Fix for default marker icons (browser-only)
-        if (typeof window !== "undefined") {
-            // @ts-expect-error - Leaflet icon private property access
-            delete L.Icon.Default.prototype._getIconUrl;
-            L.Icon.Default.mergeOptions({
-                iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-                iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-                shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-            });
-        }
+        // @ts-expect-error - Leaflet icon private property access
+        delete L.Icon.Default.prototype._getIconUrl;
+        L.Icon.Default.mergeOptions({
+            iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+            iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+            shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+        });
     }, []);
 
     const handleLocate = () => {
@@ -66,7 +67,6 @@ export default function LocationMap({ onConfirm, initialCenter = [33.5731, -7.58
 
     return (
         <div className="relative w-screen h-screen flex flex-col bg-gray-50 overflow-hidden">
-            {/* Map Content */}
             <div className="relative flex-1">
                 <MapContainer
                     center={initialCenter}
@@ -87,7 +87,6 @@ export default function LocationMap({ onConfirm, initialCenter = [33.5731, -7.58
                 {/* Stationary Center Pin */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full z-[1000] pointer-events-none mb-1 shadow-2xl">
                     <div className="relative flex flex-col items-center">
-                        {/* Custom SVG Pin for high polish */}
                         <div className="w-10 h-10 flex items-center justify-center bg-tamo-dark rounded-full border-4 border-white shadow-xl">
                             <div className="w-3 h-3 bg-tamo-lime rounded-full"></div>
                         </div>
@@ -109,7 +108,6 @@ export default function LocationMap({ onConfirm, initialCenter = [33.5731, -7.58
                 </button>
             </div>
 
-            {/* Footer Controls */}
             <div className="p-8 bg-white rounded-t-[40px] shadow-[0_-20px_50px_-20px_rgba(0,0,0,0.2)] z-[1001] flex flex-col items-center">
                 <div className="w-12 h-1.5 bg-gray-200 rounded-full mb-6"></div>
                 <h3 className="text-xl font-bold text-tamo-dark mb-1 text-center">حدد موقع التوصيل</h3>
@@ -127,4 +125,3 @@ export default function LocationMap({ onConfirm, initialCenter = [33.5731, -7.58
         </div>
     );
 }
-
