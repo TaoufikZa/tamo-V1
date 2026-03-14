@@ -66,7 +66,7 @@ export default function MapSelector({ onConfirm, initialCenter = [33.5731, -7.58
     };
 
     return (
-        <div className="relative w-screen h-screen flex flex-col bg-gray-50 overflow-hidden">
+        <div className="relative w-screen h-screen flex flex-col bg-gray-50">
             <div className="relative flex-1">
                 <MapContainer
                     center={initialCenter}
@@ -108,18 +108,15 @@ export default function MapSelector({ onConfirm, initialCenter = [33.5731, -7.58
                 </button>
             </div>
 
-            <div className="p-8 bg-white rounded-t-[40px] shadow-[0_-20px_50px_-20px_rgba(0,0,0,0.2)] z-[1001] flex flex-col items-center">
-                <div className="w-12 h-1.5 bg-gray-200 rounded-full mb-6"></div>
-                <h3 className="text-xl font-bold text-tamo-dark mb-1 text-center">حدد موقع التوصيل</h3>
-                <p className="text-gray-500 text-sm mb-8 uppercase tracking-tight font-bold text-center">Lieu de livraison</p>
-
+            {/* Fixed bottom CTA — always visible */}
+            <div className="flex-shrink-0 px-6 py-4 bg-white border-t border-gray-100 z-[1001]">
                 <button
                     onClick={() => onConfirm(coords.lat, coords.lng)}
                     type="button"
-                    className="w-full h-20 bg-tamo-dark text-tamo-lime rounded-2xl font-bold shadow-xl active:scale-[0.98] transition-all flex flex-col items-center justify-center border border-tamo-lime/20"
+                    className="w-full h-16 bg-tamo-dark text-tamo-lime rounded-2xl font-bold shadow-xl active:scale-[0.98] transition-all flex flex-col items-center justify-center border border-tamo-lime/20"
                 >
-                    <span className="text-xl font-black">تأكيد الموقع</span>
-                    <span className="text-xs font-bold opacity-80 uppercase tracking-widest mt-0.5">Confirmer la position</span>
+                    <span className="text-lg font-black">تأكيد الموقع</span>
+                    <span className="text-[10px] font-bold opacity-70 uppercase tracking-widest">Confirmer la position</span>
                 </button>
             </div>
         </div>
