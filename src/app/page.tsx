@@ -51,18 +51,9 @@ function HomeContent() {
     if (name) localStorage.setItem("tamo_customer_name", name);
     if (phone) localStorage.setItem("tamo_customer_phone", phone);
 
-    // Initial check: if we already have location in state or permission might already be granted
-    // We attempt an immediate silent check
-    navigator.permissions?.query({ name: 'geolocation' as PermissionName }).then(result => {
-      if (result.state === 'granted') {
-        requestLocation();
-      } else {
-        setLoading(false);
-      }
-    }).catch(() => {
-      // Fallback for browsers that don't support permissions API query for geolocation
-      setLoading(false);
-    });
+    // Initial check: No silent geolocation request for iOS compatibility
+    // We just stop loading and wait for user to click the CTA
+    setLoading(false);
   }, [searchParams]);
 
   if (loading) {
@@ -106,11 +97,15 @@ function HomeContent() {
         </button>
 
         {locationStatus === "denied" && (
-          <p className="mt-6 text-red-500 text-sm font-medium animate-bounce px-6">
-            تعذر الوصول إلى الموقع. يرجى تفعيل GPS في إعدادات المتصفح.
-            <br />
-            <span className="text-xs">Accès refusé. Veuillez activer le GPS dans les réglages.</span>
-          </p>
+          <div className="mt-8 p-4 bg-red-50 rounded-xl border border-red-100 mx-4">
+            <p className="text-red-600 font-bold mb-1">تم حظر الوصول إلى الموقع</p>
+            <p className="text-red-500 text-xs font-medium uppercase tracking-tight mb-3">Localisation bloquée</p>
+            <p className="text-gray-600 text-sm leading-relaxed">
+              يرجى تفعيل GPS في إعدادات المتصفح وإعادة تحميل الصفحة
+              <br />
+              <span className="text-xs italic">Veuillez activer le GPS dans les réglages et actualiser la page</span>
+            </p>
+          </div>
         )}
       </div>
     );
