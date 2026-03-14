@@ -20,7 +20,6 @@ function ShopPageContent() {
 
     // Capture customer data from URL params with localStorage fallback
     const [customerName, setCustomerName] = useState("");
-    const [customerPhone, setCustomerPhone] = useState("");
 
     useEffect(() => {
         const urlName = searchParams.get("name");
@@ -30,7 +29,6 @@ function ShopPageContent() {
         const phone = urlPhone || localStorage.getItem("tamo_customer_phone") || "";
 
         setCustomerName(name);
-        setCustomerPhone(phone);
     }, [searchParams]);
 
     const [isRecording, setIsRecording] = useState(false);
