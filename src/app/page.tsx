@@ -53,7 +53,8 @@ function HomeContent() {
     return (
       <div className="flex flex-col items-center justify-center p-8 flex-1 mt-20">
         <div className="w-16 h-16 bg-tamo-lime rounded-full animate-pulse mb-6 shadow-lg"></div>
-        <p className="text-center font-medium text-lg text-tamo-dark">Finding your neighborhood...</p>
+        <p className="text-center font-medium text-lg text-tamo-dark">جاري البحث...</p>
+        <p className="text-center text-sm text-gray-500">Recherche en cours...</p>
       </div>
     );
   }
@@ -61,7 +62,9 @@ function HomeContent() {
   if (locationGranted) {
     return (
       <div className="flex flex-col p-4 flex-1">
-        <h2 className="text-xl font-bold mb-6 text-tamo-dark">Shops Near You</h2>
+        <h2 className="text-xl font-bold mb-6 text-tamo-dark text-center">
+          متاجر قريبة / Boutiques à proximité
+        </h2>
 
         <div className="grid grid-cols-2 gap-4">
           {MOCK_SHOPS.map((shop) => (
@@ -116,7 +119,8 @@ export default function Home() {
     <Suspense fallback={
       <div className="flex flex-col items-center justify-center p-8 flex-1 mt-20">
         <div className="w-16 h-16 bg-tamo-lime rounded-full animate-pulse mb-6 shadow-lg"></div>
-        <p className="text-center font-medium text-lg text-tamo-dark">Loading...</p>
+        <p className="text-center font-medium text-lg text-tamo-dark">جاري التحميل...</p>
+        <p className="text-center text-sm text-gray-500">Chargement...</p>
       </div>
     }>
       <HomeContent />

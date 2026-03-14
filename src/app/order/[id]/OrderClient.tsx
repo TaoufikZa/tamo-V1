@@ -127,10 +127,14 @@ export default function OrderClient({ initialOrder, id }: { initialOrder: Order,
                         <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                     </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-tamo-dark mb-4">Order Accepted!</h2>
+                <h2 className="text-2xl font-bold text-tamo-dark mb-4">تم قبول الطلب! / Acceptée</h2>
                 <p className="text-gray-600 font-medium text-lg leading-relaxed">
-                    The customer has been notified via WhatsApp to prepare <span className="font-bold text-tamo-dark">{amount || order.amount || ""} DH</span>.
+                    تم إخطار الزبون عبر واتساب <br />
+                    le client a été notifié.
                 </p>
+                <div className="mt-4 p-4 bg-tamo-light rounded-xl">
+                    <span className="text-2xl font-bold text-tamo-dark">{amount || order.amount || ""} DH</span>
+                </div>
             </div>
         );
     }
@@ -143,8 +147,11 @@ export default function OrderClient({ initialOrder, id }: { initialOrder: Order,
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                     </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-tamo-dark mb-4">Order Rejected</h2>
-                <p className="text-gray-600 font-medium">The customer will be notified that you cannot fulfill this order.</p>
+                <h2 className="text-2xl font-bold text-tamo-dark mb-4">تم إلغاء الطلب / Rejetée</h2>
+                <p className="text-gray-600 font-medium text-center">
+                    سيتم إخطار الزبون بعدم التوفر <br />
+                    Le client sera informé.
+                </p>
             </div>
         );
     }
@@ -152,18 +159,21 @@ export default function OrderClient({ initialOrder, id }: { initialOrder: Order,
     return (
         <div className="flex flex-col flex-1 p-6 bg-white">
             <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
-                <h2 className="text-xl font-bold text-tamo-dark flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-tamo-lime animate-pulse"></span>
-                    New Order Received
-                </h2>
-                <span className="text-gray-400 text-sm font-mono">#{id.slice(0, 5)}</span>
+                <div className="flex flex-col">
+                    <h2 className="text-xl font-bold text-tamo-dark flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full bg-tamo-lime animate-pulse"></span>
+                        طلب جديد
+                    </h2>
+                    <p className="text-xs text-gray-400 font-medium ml-5">Nouvelle commande</p>
+                </div>
+                <span className="text-gray-400 text-sm font-mono pt-1">#{id.slice(0, 5)}</span>
             </div>
 
             <div className="flex flex-col flex-1">
                 <div className="w-full flex flex-col mb-8 bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                    <div className="flex justify-between items-start mb-4">
+                    <div className="flex justify-between items-start mb-6">
                         <div className="flex flex-col">
-                            <p className="text-gray-500 font-bold mb-1">Customer</p>
+                            <p className="text-gray-500 font-bold mb-0.5">زبون / Client</p>
                             {order.customer_name && (
                                 <p className="text-tamo-dark font-medium text-lg capitalize">{order.customer_name}</p>
                             )}
@@ -173,23 +183,26 @@ export default function OrderClient({ initialOrder, id }: { initialOrder: Order,
                                 href={`https://www.google.com/maps?q=${order.latitude},${order.longitude}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-1 text-tamo-lime bg-tamo-dark px-3 py-2 rounded-lg text-sm font-bold shadow-sm"
+                                className="flex items-center gap-2 text-tamo-lime bg-tamo-dark px-4 py-3 rounded-xl text-xs font-bold shadow-sm"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
                                 </svg>
-                                View Location
+                                الموقع / GPS
                             </a>
                         )}
                     </div>
 
-                    <p className="text-gray-500 font-medium mb-4 flex items-center gap-2 border-t pt-4 border-gray-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
-                        </svg>
-                        Customer Audio
-                    </p>
+                    <div className="flex flex-col border-t pt-4 border-gray-100">
+                        <p className="text-gray-500 font-bold mb-1 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+                            </svg>
+                            طلب صوتي
+                        </p>
+                        <p className="text-xs text-gray-400 mb-4 ml-7">Message vocal</p>
+                    </div>
                     <audio
                         key={order.audio_url} // 2. React State / Component Re-mounting
                         controls
@@ -197,7 +210,7 @@ export default function OrderClient({ initialOrder, id }: { initialOrder: Order,
                         src={audioSrc}
                         className="w-full"
                     />
-                    <div className="mt-2 text-right">
+                    <div className="mt-4 text-center">
                         <a href={audioSrc} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-tamo-dark underline font-medium">
                             Audio not playing? Open in new tab
                         </a>
@@ -206,19 +219,24 @@ export default function OrderClient({ initialOrder, id }: { initialOrder: Order,
 
                 {order.status === "pending" && (
                     <div className="flex gap-4 mt-auto">
-                        <button onClick={handleDeclineOrder} className="px-6 py-4 rounded-xl font-bold text-lg text-red-500 bg-red-50 hover:bg-red-100 transition-colors flex-1">
-                            Decline
+                        <button onClick={handleDeclineOrder} className="px-4 h-24 rounded-2xl font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-colors flex-1 flex flex-col items-center justify-center">
+                            <span className="text-lg">إلغاء</span>
+                            <span className="text-sm font-normal opacity-70">Annuler</span>
                         </button>
-                        <button onClick={handleAcceptOrder} className="px-6 py-4 rounded-xl font-bold text-lg text-tamo-dark bg-tamo-lime hover:scale-[1.02] active:scale-95 transition-transform flex-[2] shadow-md">
-                            Accept Order
+                        <button onClick={handleAcceptOrder} className="px-4 h-24 rounded-2xl font-bold text-tamo-dark bg-tamo-lime hover:scale-[1.02] active:scale-95 transition-transform flex-[2] shadow-md flex flex-col items-center justify-center">
+                            <span className="text-xl">قبول الطلب</span>
+                            <span className="text-sm font-normal opacity-80">Accepter</span>
                         </button>
                     </div>
                 )}
 
                 {order.status === "pricing" && (
                     <form onSubmit={handleValidatePrice} className="flex flex-col mt-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                        <label htmlFor="amount" className="text-tamo-dark font-bold mb-2">Total Amount</label>
-                        <div className="relative mb-6">
+                        <div className="flex flex-col items-center mb-4">
+                            <label htmlFor="amount" className="text-tamo-dark font-bold text-lg">السعر الإجمالي</label>
+                            <p className="text-gray-500 text-sm">Montant total</p>
+                        </div>
+                        <div className="relative mb-8">
                             <input
                                 id="amount"
                                 type="number"
@@ -227,17 +245,22 @@ export default function OrderClient({ initialOrder, id }: { initialOrder: Order,
                                 required
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
-                                placeholder="Enter total amount (DH)..."
-                                className="w-full p-4 pl-6 text-xl rounded-xl border-2 border-gray-200 focus:border-tamo-lime focus:outline-none focus:ring-4 focus:ring-tamo-lime/20 transition-all font-mono"
+                                placeholder="00.00"
+                                className="w-full p-4 text-center text-3xl rounded-xl border-2 border-gray-200 focus:border-tamo-lime focus:outline-none focus:ring-4 focus:ring-tamo-lime/20 transition-all font-mono font-bold"
                             />
-                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 font-bold">DH</span>
+                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xl">DH</span>
                         </div>
-                        <button type="submit" disabled={isSubmitting || !amount} className={`w-full py-4 rounded-xl font-bold text-lg transition-all text-white bg-tamo-dark shadow-md ${isSubmitting || !amount ? "opacity-75 cursor-not-allowed" : "hover:scale-[1.02] active:scale-95"}`}>
-                            {isSubmitting ? "Notifying..." : "Validate & Notify Customer"}
-                        </button>
-                        <button type="button" onClick={() => setOrder({ ...order, status: "pending" })} className="mt-4 text-gray-500 font-medium underline">
-                            Cancel
-                        </button>
+
+                        <div className="flex flex-col gap-4">
+                            <button type="submit" disabled={isSubmitting || !amount} className={`w-full h-24 rounded-2xl font-bold transition-all text-white bg-tamo-dark shadow-lg flex flex-col items-center justify-center ${isSubmitting || !amount ? "opacity-75 cursor-not-allowed" : "hover:scale-[1.02] active:scale-95"}`}>
+                                <span className="text-xl leading-tight">تأكيد وإرسال</span>
+                                <span className="text-sm font-normal text-gray-400 mt-1">Valider et Envoyer</span>
+                            </button>
+
+                            <button type="button" onClick={() => setOrder({ ...order, status: "pending" })} className="p-4 text-gray-500 font-bold text-center underline decoration-2 underline-offset-4">
+                                إلغاء / Annuler
+                            </button>
+                        </div>
                     </form>
                 )}
             </div>

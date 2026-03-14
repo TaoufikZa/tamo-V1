@@ -12,7 +12,7 @@ export default function Header() {
                 className="h-10 w-auto mb-1"
                 priority
             />
-            <p className="text-xs text-white opacity-80 uppercase tracking-widest font-bold">Just Speak It.</p>
+            <p className="text-xs text-white opacity-80 uppercase tracking-widest font-bold">Just Speak It | أطلب بصوتك</p>
         </header>
     );
 }

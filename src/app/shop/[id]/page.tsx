@@ -225,11 +225,19 @@ function ShopPageContent() {
                     </svg>
                 </div>
                 <h2 className="text-2xl font-bold text-tamo-dark mb-4">
-                    Order Sent to {shop.name}!
+                    تم إرسال الطلب إلى {shop.name}!
                 </h2>
-                <p className="text-gray-600 font-medium">
-                    You can close this page. We will message you on WhatsApp with the total amount.
-                </p>
+                <div className="space-y-2">
+                    <p className="text-gray-600 font-medium">
+                        Commande envoyée avec succès !
+                    </p>
+                    <p className="text-gray-500 text-sm">
+                        سنتواصل معك عبر واتساب لتأكيد السعر الإجمالي
+                    </p>
+                    <p className="text-gray-400 text-xs italic">
+                        Nous vous contacterons par WhatsApp pour confirmer le montant total.
+                    </p>
+                </div>
             </div>
         );
     }
@@ -274,46 +282,52 @@ function ShopPageContent() {
                             )}
                         </button>
 
-                        <div className="flex flex-col mt-8 items-center">
-                            <p className="text-gray-500 font-bold mb-1">Customer</p>
-                            <p className="text-tamo-dark font-medium text-lg capitalize">
+                        <div className="flex flex-col mt-8 items-center text-center">
+                            <p className="text-gray-500 font-bold mb-1">إضغط لبدء التسجيل</p>
+                            <p className="text-gray-400 text-sm">Appuyez pour enregistrer</p>
+                            <p className="text-tamo-dark font-medium text-lg capitalize mt-2">
                                 {customerName || ""}
                             </p>
-                            {/* Hidden phone number display as requested, keeping it in data for webhooks */}
                         </div>
                         {isRecording ? (
                             <div className="mt-8 text-2xl font-mono font-bold text-red-500 animate-pulse">
                                 {formatTime(recordingTime)}
                             </div>
                         ) : (
-                            <p className="mt-8 text-gray-500 font-medium">Tap to start speaking</p>
+                            <div className="mt-8 text-center">
+                                <p className="text-tamo-dark font-bold text-lg">أطلب بصوتك</p>
+                                <p className="text-gray-500 text-base">Commandez par message vocal</p>
+                            </div>
                         )}
                     </div>
                 ) : (
                     // Review / Send State
-                    <div className="w-full max-w-sm flex flex-col items-center space-y-8">
-                        <p className="text-gray-500 font-medium pb-2 border-b border-gray-100 w-full text-center">
-                            Review your order
-                        </p>
+                    <div className="w-full max-w-sm flex flex-col items-center">
+                        <div className="flex flex-col items-center mb-8 pb-4 border-b border-gray-100 w-full">
+                            <h2 className="text-xl font-bold text-tamo-dark text-center">يرجى تأكيد طلبك</h2>
+                            <p className="text-gray-500 text-sm text-center">Veuillez confirmer votre commande</p>
+                        </div>
 
                         <audio controls src={audioUrl} className="w-full" />
 
-                        <div className="flex flex-col w-full space-y-4 mt-8">
+                        <div className="flex flex-col w-full space-y-4 mt-12">
                             <button
                                 onClick={handleSendOrder}
                                 disabled={isSending}
-                                className={`w-full py-4 rounded-xl font-bold text-lg transition-transform text-tamo-lime bg-tamo-dark ${isSending ? "opacity-75 cursor-not-allowed" : "hover:scale-[1.02] active:scale-95 shadow-md"
+                                className={`w-full h-24 rounded-2xl font-bold transition-all flex flex-col items-center justify-center text-tamo-lime bg-tamo-dark ${isSending ? "opacity-75 cursor-not-allowed" : "hover:shadow-lg active:scale-95 shadow-md"
                                     }`}
                             >
-                                {isSending ? "Sending..." : "Send Order"}
+                                <span className="text-xl leading-tight">أرسل طلبك</span>
+                                <span className="text-sm font-normal opacity-80 mt-1">Envoyer</span>
                             </button>
 
                             <button
                                 onClick={handleRerecord}
                                 disabled={isSending}
-                                className="w-full py-3 rounded-xl font-semibold text-gray-600 bg-gray-100 transition-colors hover:bg-gray-200"
+                                className="w-full h-20 rounded-2xl font-bold text-gray-600 bg-gray-100 transition-colors hover:bg-gray-200 flex flex-col items-center justify-center"
                             >
-                                Re-record
+                                <span className="text-lg leading-tight">إعادة التسجيل</span>
+                                <span className="text-sm font-normal text-gray-500 mt-1">Réenregistrer</span>
                             </button>
                         </div>
                     </div>
