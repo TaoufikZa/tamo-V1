@@ -108,9 +108,6 @@ function HomeContent() {
   return null;
 }
 
-return null;
-}
-
 export default function Home() {
   return (
     <Suspense fallback={
