@@ -5,10 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 // Mock Data
 const MOCK_SHOPS = [
-  { id: "1", name: "Hanout Brahim", type: "Store", distance: "120m", phone: "212600000001" },
-  { id: "2", name: "Khadija Sweets", type: "Home Bakery", distance: "300m", phone: "212600000002" },
-  { id: "3", name: "Epicerie Atlas", type: "Store", distance: "500m", phone: "212600000003" },
-  { id: "taoufik-shop", name: "Taoufik Shop", type: "General Store", distance: "600m", phone: "212601866049" },
+  { id: "1", name: "Hanout Brahim", type: "Store", distance: "120m", phone: "212600000001", image: "/shop1.png" },
+  { id: "2", name: "Khadija Sweets", type: "Home Bakery", distance: "300m", phone: "212600000002", image: "/shop2.png" },
+  { id: "3", name: "Epicerie Atlas", type: "Store", distance: "500m", phone: "212600000003", image: "/shop3.png" },
+  { id: "taoufik-shop", name: "Taoufik Shop", type: "General Store", distance: "600m", phone: "212601866049", image: "/shop4.png" },
 ];
 
 function HomeContent() {
@@ -60,9 +60,9 @@ function HomeContent() {
   if (locationGranted) {
     return (
       <div className="flex flex-col p-4 flex-1">
-        <h2 className="text-2xl font-bold mb-6 text-tamo-dark">Shops Near You</h2>
+        <h2 className="text-xl font-bold mb-6 text-tamo-dark">Shops Near You</h2>
 
-        <div className="flex flex-col space-y-4">
+        <div className="grid grid-cols-2 gap-4">
           {MOCK_SHOPS.map((shop) => (
             <div
               key={shop.id}
@@ -75,19 +75,28 @@ function HomeContent() {
                 const query = params.toString();
                 router.push(`/shop/${shop.id}${query ? `?${query}` : ""}`);
               }}
-              className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-100"
+              className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-100 overflow-hidden flex flex-col"
             >
-              <div className="flex flex-col">
-                <span className="font-bold text-lg text-tamo-dark">{shop.name}</span>
-                <span className="text-sm text-gray-500 mt-1">
-                  {shop.type} • {shop.distance}
-                </span>
+              {/* Shop Image */}
+              <div className="relative h-32 w-full overflow-hidden">
+                <img
+                  src={shop.image}
+                  alt={shop.name}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-[10px] font-bold text-tamo-dark shadow-sm">
+                  {shop.distance}
+                </div>
               </div>
 
-              <div className="w-10 h-10 bg-tamo-light rounded-full flex items-center justify-center text-tamo-lime">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                </svg>
+              {/* Shop Info */}
+              <div className="p-3 flex flex-col flex-1">
+                <span className="font-bold text-sm text-tamo-dark line-clamp-1 group-hover:text-tamo-lime transition-colors">
+                  {shop.name}
+                </span>
+                <span className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-medium">
+                  {shop.type}
+                </span>
               </div>
             </div>
           ))}
@@ -97,6 +106,9 @@ function HomeContent() {
   }
 
   return null;
+}
+
+return null;
 }
 
 export default function Home() {
