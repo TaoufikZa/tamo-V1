@@ -149,16 +149,37 @@ function ShopPageContent() {
         try {
             const formData = new FormData();
 
-            // 1. Direct Source Lookup: Grab phone directly from params/storage to avoid state lag
-            const directPhone = searchParams.get("phone");
-            const storedPhone = localStorage.getItem("tamo_customer_phone") || localStorage.getItem("userPhone");
-            const finalPhone = directPhone || storedPhone || "";
+            // 1. Robust Metadata Capture
+            // Name: Search Params -> LocalStorage (Multiple Keys)
+            const finalName = searchParams.get("name") ||
+                searchParams.get("customer_name") ||
+                localStorage.getItem("tamo_customer_name") ||
+                localStorage.getItem("userName") ||
+                "";
 
-            console.log("Final Phone Check:", finalPhone);
+            // Phone: Search Params -> LocalStorage (Multiple Keys)
+            const finalPhone = searchParams.get("phone") ||
+                searchParams.get("customer_phone") ||
+                localStorage.getItem("tamo_customer_phone") ||
+                localStorage.getItem("userPhone") ||
+                "";
 
-            const directName = searchParams.get("name");
-            const storedName = localStorage.getItem("tamo_customer_name");
-            const finalName = directName || storedName || "";
+            // Geolocation: Use current state, but try to fallback to navigator if state is null
+            let lat = location?.lat || "";
+            let lng = location?.lng || "";
+
+            if (!lat || !lng) {
+                // Last ditch effort to get location if state lagged
+                try {
+                    const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000 });
+                    });
+                    lat = pos.coords.latitude.toString();
+                    lng = pos.coords.longitude.toString();
+                } catch (e) {
+                    console.warn("Retried geolocation failed:", e);
+                }
+            }
 
             // 2. Append the Audio properly: Standard file, not Base64
             const extension = mimeTypeRef.current.includes('mp4') ? 'm4a' : 'webm';
@@ -168,16 +189,13 @@ function ShopPageContent() {
             formData.append("shop_id", id);
             formData.append("customer_name", finalName);
             formData.append("customer_phone", finalPhone);
-            formData.append("latitude", (location?.lat || "").toString());
-            formData.append("longitude", (location?.lng || "").toString());
+            formData.append("latitude", lat.toString());
+            formData.append("longitude", lng.toString());
             formData.append("status", "pending");
             formData.append("mime_type", mimeTypeRef.current);
 
-            // 5. Debug Logging: Verify keys before sending
-            console.log("Submitting FormData with keys:");
-            formData.forEach((_, key) => {
-                console.log(` - ${key}`);
-            });
+            // 4. Debug Logging as requested
+            console.log('Submission Payload:', Object.fromEntries(formData));
 
             const response = await fetch(process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || "", {
                 method: "POST",
