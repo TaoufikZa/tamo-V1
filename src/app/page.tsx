@@ -99,10 +99,10 @@ function HomeContent() {
 
         <button
           onClick={requestLocation}
-          className="w-full max-w-xs h-20 bg-tamo-dark text-white rounded-2xl font-bold shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center"
+          className="w-full max-w-xs h-24 bg-tamo-dark text-tamo-lime rounded-[20px] font-bold shadow-xl active:scale-[0.98] transition-all flex flex-col items-center justify-center border border-tamo-lime/20"
         >
-          <span className="text-xl">تفعيل الموقع</span>
-          <span className="text-sm font-normal text-gray-400">Activer la localisation</span>
+          <span className="text-2xl mb-1">تفعيل الموقع</span>
+          <span className="text-sm font-medium opacity-80 uppercase tracking-wider">Activer la localisation</span>
         </button>
 
         {locationStatus === "denied" && (
