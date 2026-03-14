@@ -155,15 +155,25 @@ function ShopPageContent() {
         try {
             const formData = new FormData();
 
+            // 1. Direct Source Lookup: Grab phone directly from params/storage to avoid state lag
+            const directPhone = searchParams.get("phone");
+            const storedPhone = localStorage.getItem("tamo_customer_phone") || localStorage.getItem("userPhone");
+            const finalPhone = directPhone || storedPhone || "";
+
+            console.log("Final Phone Check:", finalPhone);
+
+            const directName = searchParams.get("name");
+            const storedName = localStorage.getItem("tamo_customer_name");
+            const finalName = directName || storedName || "";
+
             // 2. Append the Audio properly: Standard file, not Base64
-            // Using a generic extension based on mimeType would be better, but 'order.audio' works
             const extension = mimeTypeRef.current.includes('mp4') ? 'm4a' : 'webm';
             formData.append("audio", audioBlob, `order.${extension}`);
 
             // 3. Append the Metadata
             formData.append("shop_id", id);
-            formData.append("customer_name", customerName);
-            formData.append("customer_phone", customerPhone);
+            formData.append("customer_name", finalName);
+            formData.append("customer_phone", finalPhone);
             formData.append("latitude", (location?.lat || "").toString());
             formData.append("longitude", (location?.lng || "").toString());
             formData.append("status", "pending");
