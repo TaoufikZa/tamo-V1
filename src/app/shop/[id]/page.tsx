@@ -289,14 +289,9 @@ function ShopPageContent() {
                                 {customerName || ""}
                             </p>
                         </div>
-                        {isRecording ? (
+                        {isRecording && (
                             <div className="mt-8 text-2xl font-mono font-bold text-red-500 animate-pulse">
                                 {formatTime(recordingTime)}
-                            </div>
-                        ) : (
-                            <div className="mt-8 text-center">
-                                <p className="text-tamo-dark font-bold text-lg">أطلب بصوتك</p>
-                                <p className="text-gray-500 text-base">Commandez par message vocal</p>
                             </div>
                         )}
                     </div>
