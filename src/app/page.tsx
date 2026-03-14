@@ -3,6 +3,19 @@
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
+import dynamic from "next/dynamic";
+
+// Dynamically import Map component to prevent SSR errors
+const LocationMap = dynamic(() => import("./components/LocationMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex flex-col items-center justify-center p-8 flex-1 mt-20 text-center">
+      <div className="w-16 h-16 bg-tamo-lime rounded-full animate-pulse mb-6 shadow-lg"></div>
+      <p className="font-bold text-xl text-tamo-dark">جاري تحميل الخريطة...</p>
+      <p className="text-gray-500 font-medium">Chargement de la carte...</p>
+    </div>
+  )
+});
 
 // Mock Data
 const MOCK_SHOPS = [
@@ -16,7 +29,7 @@ function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
+  const [view, setView] = useState<"list" | "map">("map");
 
   useEffect(() => {
     // 1. Capture customer data from URL and persist to localStorage
@@ -26,43 +39,68 @@ function HomeContent() {
     if (name) localStorage.setItem("tamo_customer_name", name);
     if (phone) localStorage.setItem("tamo_customer_phone", phone);
 
-    const fetchLocation = async () => {
-      try {
-        const resp = await fetch("https://ipapi.co/json/");
-        const data = await resp.json();
+    // 2. Check if location is already set
+    const lat = localStorage.getItem("tamo_latitude");
+    const lng = localStorage.getItem("tamo_longitude");
 
-        if (data.latitude && data.longitude) {
-          localStorage.setItem("tamo_latitude", data.latitude.toString());
-          localStorage.setItem("tamo_longitude", data.longitude.toString());
-        } else {
-          throw new Error("Invalid IP location data");
-        }
-      } catch (e) {
-        console.warn("Location fetch failed, using fallback (Casablanca):", e);
-        // Default to Casablanca: 33.5731, -7.5898
-        localStorage.setItem("tamo_latitude", "33.5731");
-        localStorage.setItem("tamo_longitude", "-7.5898");
-      } finally {
-        setInitialized(true);
-        setLoading(false);
-      }
-    };
-
-    fetchLocation();
+    if (lat && lng) {
+      setView("list");
+    } else {
+      setView("map");
+    }
+    setLoading(false);
   }, [searchParams]);
 
-  if (loading || !initialized) {
+  const handleConfirmLocation = (lat: number, lng: number) => {
+    localStorage.setItem("tamo_latitude", lat.toString());
+    localStorage.setItem("tamo_longitude", lng.toString());
+    setView("list");
+  };
+
+  const handleChangeLocation = () => {
+    localStorage.removeItem("tamo_latitude");
+    localStorage.removeItem("tamo_longitude");
+    setView("map");
+  };
+
+  if (loading) {
     return (
       <div className="flex flex-col items-center justify-center p-8 flex-1 mt-20 text-center">
         <div className="w-16 h-16 bg-tamo-lime rounded-full animate-pulse mb-6 shadow-lg"></div>
-        <p className="font-bold text-xl text-tamo-dark">جاري البحث عن المتاجر...</p>
-        <p className="text-gray-500 font-medium">Recherche des boutiques en cours...</p>
+        <p className="font-bold text-xl text-tamo-dark">جاري التحميل...</p>
+        <p className="text-gray-500 font-medium">Chargement...</p>
       </div>
     );
   }
 
+  if (view === "map") {
+    return <LocationMap onConfirm={handleConfirmLocation} />;
+  }
+
   return (
     <div className="flex flex-col p-4 flex-1">
+      {/* Location Header */}
+      <div
+        onClick={handleChangeLocation}
+        className="mb-8 p-4 bg-tamo-light rounded-2xl flex items-center justify-between border border-tamo-dark/5 active:scale-[0.98] transition-all cursor-pointer"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-tamo-dark rounded-full flex items-center justify-center shadow-md">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-tamo-lime">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+            </svg>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-bold text-tamo-dark">موقع التوصيل المحدد</span>
+            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Position de livraison définie</span>
+          </div>
+        </div>
+        <div className="bg-white px-3 py-1.5 rounded-lg text-[10px] font-black text-tamo-dark shadow-sm border border-gray-100 flex flex-col items-center">
+          <span>تغيير</span>
+          <span className="opacity-50">MODIFIER</span>
+        </div>
+      </div>
       <h2 className="text-xl font-bold mb-6 text-tamo-dark text-center">
         متاجر قريبة / Boutiques à proximité
       </h2>
