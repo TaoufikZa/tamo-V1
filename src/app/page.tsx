@@ -30,6 +30,7 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"list" | "map">("map");
+  const [address, setAddress] = useState<string | null>(null);
 
   useEffect(() => {
     // 1. Capture customer data from URL and persist to localStorage
@@ -45,21 +46,45 @@ function HomeContent() {
 
     if (lat && lng) {
       setView("list");
+      // Restore cached address if available
+      const saved = localStorage.getItem("tamo_address");
+      if (saved) setAddress(saved);
     } else {
       setView("map");
     }
     setLoading(false);
   }, [searchParams]);
 
-  const handleConfirmLocation = (lat: number, lng: number) => {
+  const handleConfirmLocation = async (lat: number, lng: number) => {
     localStorage.setItem("tamo_latitude", lat.toString());
     localStorage.setItem("tamo_longitude", lng.toString());
+    // Reverse geocode to get street address
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=fr`
+      );
+      const data = await res.json();
+      const addr =
+        data.address?.road ||
+        data.address?.suburb ||
+        data.address?.neighbourhood ||
+        data.display_name?.split(",")[0] ||
+        "";
+      if (addr) {
+        localStorage.setItem("tamo_address", addr);
+        setAddress(addr);
+      }
+    } catch {
+      // Geocode failed — no address shown, that's fine
+    }
     setView("list");
   };
 
   const handleChangeLocation = () => {
     localStorage.removeItem("tamo_latitude");
     localStorage.removeItem("tamo_longitude");
+    localStorage.removeItem("tamo_address");
+    setAddress(null);
     setView("map");
   };
 
@@ -92,8 +117,12 @@ function HomeContent() {
             </svg>
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-tamo-dark">موقع التوصيل المحدد</span>
-            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Position de livraison définie</span>
+            <span className="text-sm font-bold text-tamo-dark line-clamp-1">
+              {address || "موقع التوصيل المحدد"}
+            </span>
+            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">
+              {address ? "Adresse de livraison" : "Position de livraison définie"}
+            </span>
           </div>
         </div>
         <div className="bg-white px-3 py-1.5 rounded-lg text-[10px] font-black text-tamo-dark shadow-sm border border-gray-100 flex flex-col items-center">
