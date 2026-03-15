@@ -93,7 +93,7 @@ function RegisterForm() {
 
     // Show map full-screen when selecting location
     if (showMap) {
-        return <MapSelector onConfirm={handleMapConfirm} />;
+        return <MapSelector onConfirm={handleMapConfirm} savedLat={null} savedLng={null} />;
     }
 
     // Success state

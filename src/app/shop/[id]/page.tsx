@@ -4,6 +4,8 @@ import { useState, useRef, useEffect, Suspense } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 
 import { supabase } from "@/lib/supabase";
+import Image from "next/image";
+import { useLocation } from "@/context/LocationContext";
 
 interface Shop {
     id: string;
@@ -51,7 +53,8 @@ function ShopPageContent() {
     const [isRecording, setIsRecording] = useState(false);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
     const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-    const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
+    // Location is now pulled from global context
+    const { lat: savedLat, lng: savedLng } = useLocation();
     const [recordingTime, setRecordingTime] = useState(0);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isSending, setIsSending] = useState(false);
@@ -63,20 +66,6 @@ function ShopPageContent() {
     const mimeTypeRef = useRef<string>("");
 
     useEffect(() => {
-        // Request geolocation early to avoid delays
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setLocation({
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude,
-                    });
-                },
-                (error) => console.error("Geolocation error:", error),
-                { enableHighAccuracy: true }
-            );
-        }
-
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
         };
@@ -185,24 +174,11 @@ function ShopPageContent() {
                 localStorage.getItem("userPhone") ||
                 "";
 
-            // Geolocation: Pull from localStorage (Saved by Home Gateway)
-            const storedLat = localStorage.getItem("tamo_latitude");
-            const storedLng = localStorage.getItem("tamo_longitude");
-
-            let lat = storedLat || location?.lat || "";
-            let lng = storedLng || location?.lng || "";
-
-            if (!lat || !lng) {
-                // Last ditch effort if localStorage was cleared
-                try {
-                    const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000 });
-                    });
-                    lat = pos.coords.latitude.toString();
-                    lng = pos.coords.longitude.toString();
-                } catch (e) {
-                    console.warn("Final fallback location failed:", e);
-                }
+            // 1. Strict Map-Based Location Validation
+            if (savedLat === null || savedLng === null) {
+                alert("يرجى تحديد موقع التوصيل أولاً / Veuillez sélectionner un lieu de livraison d'abord");
+                router.push("/"); // Redirect to home map
+                return;
             }
 
             // 2. Append the Audio properly: Standard file, not Base64
@@ -213,8 +189,8 @@ function ShopPageContent() {
             formData.append("shop_id", id);
             formData.append("customer_name", finalName);
             formData.append("customer_phone", finalPhone);
-            formData.append("latitude", lat.toString());
-            formData.append("longitude", lng.toString());
+            formData.append("latitude", savedLat.toString());
+            formData.append("longitude", savedLng.toString());
             formData.append("status", "pending");
             formData.append("mime_type", mimeTypeRef.current);
 
@@ -329,6 +305,25 @@ function ShopPageContent() {
                 <h2 className="text-xl font-bold text-tamo-dark flex-1 text-center pr-8">
                     {shop.name}
                 </h2>
+            </div>
+
+            {/* Shop Hero Image */}
+            <div className="w-full h-48 relative rounded-2xl overflow-hidden mb-6 bg-gray-100 shadow-sm">
+                {shop.photo_url ? (
+                    <Image
+                        src={shop.photo_url}
+                        alt={shop.name}
+                        fill
+                        className="object-cover"
+                        priority
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-16 h-16">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a48.667 48.667 0 0 1 12 0m-12 0V6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v3.349M3.75 21h16.5" />
+                        </svg>
+                    </div>
+                )}
             </div>
 
             {/* Main Content Area */}

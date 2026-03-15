@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { MapContainer, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 
@@ -9,7 +9,8 @@ import "leaflet/dist/leaflet.css";
 
 interface MapSelectorProps {
     onConfirm: (lat: number, lng: number) => void;
-    initialCenter?: [number, number];
+    savedLat?: number | null;
+    savedLng?: number | null;
 }
 
 // MapController: Helper to bridge the map instance and handle movements
@@ -38,12 +39,36 @@ function MapController({
     return null;
 }
 
-export default function MapSelector({ onConfirm, initialCenter = [33.5731, -7.5898] }: MapSelectorProps) {
+export default function MapSelector({ onConfirm, savedLat, savedLng }: MapSelectorProps) {
     const [map, setMap] = useState<L.Map | null>(null);
     const [coords, setCoords] = useState<{ lat: number; lng: number }>({
-        lat: initialCenter[0],
-        lng: initialCenter[1],
+        lat: savedLat ?? 33.5731,
+        lng: savedLng ?? -7.5898,
     });
+
+    const hasInitialized = useRef(false);
+
+    // Initial sync: Move map to saved location OR auto-locate once
+    useEffect(() => {
+        if (!map || hasInitialized.current) return;
+
+        const hasSaved = savedLat !== null && savedLng !== null && savedLat !== undefined && savedLng !== undefined;
+
+        if (hasSaved) {
+            // Priority 1: Use saved location
+            setCoords({ lat: savedLat!, lng: savedLng! });
+            map.setView([savedLat!, savedLng!], 16);
+            hasInitialized.current = true;
+        } else {
+            // Priority 2: Auto-locate only if no saved location
+            map.locate({ setView: true, maxZoom: 16 }).on("locationfound", (e) => {
+                if (!hasInitialized.current) {
+                    setCoords({ lat: e.latlng.lat, lng: e.latlng.lng });
+                    hasInitialized.current = true;
+                }
+            });
+        }
+    }, [map, savedLat, savedLng]);
 
     // Safe browser-only Leaflet initialization
     useEffect(() => {
@@ -86,7 +111,7 @@ export default function MapSelector({ onConfirm, initialCenter = [33.5731, -7.58
             </div>
             <div className="relative flex-1">
                 <MapContainer
-                    center={initialCenter}
+                    center={[coords.lat, coords.lng]}
                     zoom={13}
                     style={{ height: "100%", width: "100%" }}
                     zoomControl={false}

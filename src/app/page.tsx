@@ -38,7 +38,6 @@ function HomeContent() {
     lng,
     address,
     setLocation,
-    clearLocation,
     isLoading: isLocationLoading
   } = useLocation();
 
@@ -118,8 +117,7 @@ function HomeContent() {
   };
 
   const handleChangeLocation = () => {
-    clearLocation();
-    setShops([]);
+    // Keep internal location state so the map opens at the current spot
     setView("map");
   };
 
@@ -134,9 +132,7 @@ function HomeContent() {
   }
 
   if (view === "map") {
-    const initialCenter: [number, number] | undefined =
-      lat !== null && lng !== null ? [lat, lng] : undefined;
-    return <MapSelector onConfirm={handleConfirmLocation} initialCenter={initialCenter} />;
+    return <MapSelector onConfirm={handleConfirmLocation} savedLat={lat} savedLng={lng} />;
   }
 
   return (
@@ -221,6 +217,7 @@ function HomeContent() {
                       fill
                       sizes="(max-width: 400px) 50vw, 200px"
                       className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      unoptimized // Added to handle Supabase URLs without complex Next.js config hurdles
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-100">
