@@ -142,7 +142,9 @@ function HomeContent() {
   }
 
   if (view === "map") {
-    return <MapSelector onConfirm={handleConfirmLocation} />;
+    const initialCenter: [number, number] | undefined =
+      userLat !== null && userLon !== null ? [userLat, userLon] : undefined;
+    return <MapSelector onConfirm={handleConfirmLocation} initialCenter={initialCenter} />;
   }
 
   return (
@@ -195,8 +197,8 @@ function HomeContent() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a48.667 48.667 0 0 1 12 0m-12 0V6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v3.349M3.75 21h16.5" />
             </svg>
           </div>
-          <p className="font-bold text-tamo-dark">لا توجد متاجر قريبة</p>
-          <p className="text-xs text-gray-400 font-medium mt-1">Aucune boutique à proximité</p>
+          <p className="font-bold text-tamo-dark">لا توجد متاجر قريبة. حاول تغيير موقعك.</p>
+          <p className="text-xs text-gray-400 font-medium mt-1">No shops nearby. Try changing your location.</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4">
@@ -253,8 +255,9 @@ function HomeContent() {
             );
           })}
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 }
 
