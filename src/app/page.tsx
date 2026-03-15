@@ -37,6 +37,8 @@ function HomeContent() {
   const [shops, setShops] = useState<Shop[]>([]);
   const [shopsLoading, setShopsLoading] = useState(false);
   const [shopsError, setShopsError] = useState(false);
+  const [userLat, setUserLat] = useState<number | null>(null);
+  const [userLon, setUserLon] = useState<number | null>(null);
 
   useEffect(() => {
     // 1. Capture customer data from URL and persist to localStorage
@@ -51,15 +53,25 @@ function HomeContent() {
     const lng = localStorage.getItem("tamo_longitude");
 
     if (lat && lng) {
+      const lt = parseFloat(lat);
+      const ln = parseFloat(lng);
+      setUserLat(lt);
+      setUserLon(ln);
       setView("list");
       const saved = localStorage.getItem("tamo_address");
       if (saved) setAddress(saved);
-      fetchShops(parseFloat(lat), parseFloat(lng));
     } else {
       setView("map");
     }
     setLoading(false);
   }, [searchParams]);
+
+  // Reactive Shop Fetching
+  useEffect(() => {
+    if (userLat !== null && userLon !== null) {
+      fetchShops(userLat, userLon);
+    }
+  }, [userLat, userLon]);
 
   const fetchShops = async (lat: number, lng: number) => {
     setShopsLoading(true);
@@ -81,7 +93,11 @@ function HomeContent() {
   const handleConfirmLocation = async (lat: number, lng: number) => {
     localStorage.setItem("tamo_latitude", lat.toString());
     localStorage.setItem("tamo_longitude", lng.toString());
-    fetchShops(lat, lng);
+
+    // Setting these states triggers the reactive useEffect fetch
+    setUserLat(lat);
+    setUserLon(lng);
+
     // Reverse geocode to get street address
     try {
       const res = await fetch(
@@ -110,6 +126,8 @@ function HomeContent() {
     localStorage.removeItem("tamo_address");
     setAddress(null);
     setShops([]);
+    setUserLat(null);
+    setUserLon(null);
     setView("map");
   };
 
