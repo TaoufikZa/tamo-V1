@@ -28,57 +28,57 @@ interface Shop {
   distance_km: number;
 }
 
+import { useLocation } from "@/context/LocationContext";
+
 function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<"list" | "map">("map");
-  const [address, setAddress] = useState<string | null>(null);
+  const {
+    lat,
+    lng,
+    address,
+    setLocation,
+    clearLocation,
+    isLoading: isLocationLoading
+  } = useLocation();
+
   const [shops, setShops] = useState<Shop[]>([]);
   const [shopsLoading, setShopsLoading] = useState(false);
   const [shopsError, setShopsError] = useState(false);
-  const [userLat, setUserLat] = useState<number | null>(null);
-  const [userLon, setUserLon] = useState<number | null>(null);
+  const [view, setView] = useState<"list" | "map">("map");
 
   useEffect(() => {
-    // 1. Capture customer data from URL and persist to localStorage
+    // Capture identity data from URL and persist
     const name = searchParams.get("name");
     const phone = searchParams.get("phone");
-
     if (name) localStorage.setItem("tamo_customer_name", name);
     if (phone) localStorage.setItem("tamo_customer_phone", phone);
-
-    // 2. Check if location is already set
-    const lat = localStorage.getItem("tamo_latitude");
-    const lng = localStorage.getItem("tamo_longitude");
-
-    if (lat && lng) {
-      const lt = parseFloat(lat);
-      const ln = parseFloat(lng);
-      setUserLat(lt);
-      setUserLon(ln);
-      setView("list");
-      const saved = localStorage.getItem("tamo_address");
-      if (saved) setAddress(saved);
-    } else {
-      setView("map");
-    }
-    setLoading(false);
   }, [searchParams]);
+
+  // View Sync
+  useEffect(() => {
+    if (!isLocationLoading) {
+      if (lat && lng) {
+        setView("list");
+      } else {
+        setView("map");
+      }
+    }
+  }, [lat, lng, isLocationLoading]);
 
   // Reactive Shop Fetching
   useEffect(() => {
-    if (userLat !== null && userLon !== null) {
-      fetchShops(userLat, userLon);
+    if (lat !== null && lng !== null) {
+      fetchShops(lat, lng);
     }
-  }, [userLat, userLon]);
+  }, [lat, lng]);
 
-  const fetchShops = async (lat: number, lng: number) => {
+  const fetchShops = async (targetLat: number, targetLng: number) => {
     setShopsLoading(true);
     setShopsError(false);
     const { data, error } = await supabase.rpc("get_nearby_shops", {
-      user_lat: lat,
-      user_lon: lng,
+      user_lat: targetLat,
+      user_lon: targetLng,
       max_distance_km: 5.0,
     });
     if (error) {
@@ -90,18 +90,14 @@ function HomeContent() {
     setShopsLoading(false);
   };
 
-  const handleConfirmLocation = async (lat: number, lng: number) => {
-    localStorage.setItem("tamo_latitude", lat.toString());
-    localStorage.setItem("tamo_longitude", lng.toString());
+  const handleConfirmLocation = async (newLat: number, newLng: number) => {
+    // 1. Update Context (handles state + localStorage)
+    setLocation(newLat, newLng, null);
 
-    // Setting these states triggers the reactive useEffect fetch
-    setUserLat(lat);
-    setUserLon(lng);
-
-    // Reverse geocode to get street address
+    // 2. Reverse geocode asynchronously
     try {
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=fr`
+        `https://nominatim.openstreetmap.org/reverse?lat=${newLat}&lon=${newLng}&format=json&accept-language=fr`
       );
       const data = await res.json();
       const addr =
@@ -110,28 +106,24 @@ function HomeContent() {
         data.address?.neighbourhood ||
         data.display_name?.split(",")[0] ||
         "";
+
       if (addr) {
-        localStorage.setItem("tamo_address", addr);
-        setAddress(addr);
+        setLocation(newLat, newLng, addr);
       }
     } catch {
-      // Geocode failed — no address shown, that's fine
+      // Address fail is non-blocking
     }
+
     setView("list");
   };
 
   const handleChangeLocation = () => {
-    localStorage.removeItem("tamo_latitude");
-    localStorage.removeItem("tamo_longitude");
-    localStorage.removeItem("tamo_address");
-    setAddress(null);
+    clearLocation();
     setShops([]);
-    setUserLat(null);
-    setUserLon(null);
     setView("map");
   };
 
-  if (loading) {
+  if (isLocationLoading) {
     return (
       <div className="flex flex-col items-center justify-center p-8 flex-1 mt-20 text-center">
         <div className="w-16 h-16 bg-tamo-lime rounded-full animate-pulse mb-6 shadow-lg"></div>
@@ -143,7 +135,7 @@ function HomeContent() {
 
   if (view === "map") {
     const initialCenter: [number, number] | undefined =
-      userLat !== null && userLon !== null ? [userLat, userLon] : undefined;
+      lat !== null && lng !== null ? [lat, lng] : undefined;
     return <MapSelector onConfirm={handleConfirmLocation} initialCenter={initialCenter} />;
   }
 
@@ -197,8 +189,8 @@ function HomeContent() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a48.667 48.667 0 0 1 12 0m-12 0V6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v3.349M3.75 21h16.5" />
             </svg>
           </div>
-          <p className="font-bold text-tamo-dark">لا توجد متاجر قريبة. حاول تغيير موقعك.</p>
-          <p className="text-xs text-gray-400 font-medium mt-1">No shops nearby. Try changing your location.</p>
+          <p className="font-bold text-tamo-dark">لا توجد متاجر على بعد 5 كلم. حاول تغيير موقعك.</p>
+          <p className="text-xs text-gray-400 font-medium mt-1">No shops within 5km. Try changing your location.</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4">

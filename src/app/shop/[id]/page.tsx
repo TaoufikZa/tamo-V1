@@ -3,20 +3,41 @@
 import { useState, useRef, useEffect, Suspense } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 
-// Mock Data
-const MOCK_SHOPS = [
-    { id: "1", name: "Hanout Brahim", type: "Store", distance: "120m", phone: "212600000001" },
-    { id: "2", name: "Khadija Sweets", type: "Home Bakery", distance: "300m", phone: "212600000002" },
-    { id: "3", name: "Epicerie Atlas", type: "Store", distance: "500m", phone: "212600000003" },
-    { id: "taoufik-shop", name: "Taoufik Shop", type: "General Store", distance: "600m", phone: "212601866049" },
-];
+import { supabase } from "@/lib/supabase";
+
+interface Shop {
+    id: string;
+    name: string;
+    category: string;
+    phone: string;
+    photo_url: string | null;
+}
 
 function ShopPageContent() {
     const router = useRouter();
     const params = useParams();
     const searchParams = useSearchParams();
     const id = params.id as string;
-    const shop = MOCK_SHOPS.find((s) => s.id === id) || MOCK_SHOPS[0];
+
+    const [shop, setShop] = useState<Shop | null>(null);
+    const [shopLoading, setShopLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchShop = async () => {
+            setShopLoading(true);
+            const { data, error } = await supabase
+                .from("shops")
+                .select("*")
+                .eq("id", id)
+                .single();
+
+            if (!error && data) {
+                setShop(data);
+            }
+            setShopLoading(false);
+        };
+        if (id) fetchShop();
+    }, [id]);
 
     // Capture customer data from URL params with localStorage fallback
     const [customerName, setCustomerName] = useState("");
@@ -236,6 +257,36 @@ function ShopPageContent() {
         const secs = seconds % 60;
         return `${mins}:${secs.toString().padStart(2, "0")}`;
     };
+
+    if (shopLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center p-8 flex-1 mt-20">
+                <div className="w-16 h-16 border-4 border-tamo-lime border-t-transparent rounded-full animate-spin mb-6"></div>
+                <p className="text-center font-medium text-lg text-tamo-dark">جاري التحميل...</p>
+                <p className="text-center text-sm text-gray-500">Chargement du magasin...</p>
+            </div>
+        );
+    }
+
+    if (!shop) {
+        return (
+            <div className="flex flex-col items-center justify-center p-8 flex-1 mt-20 text-center">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-red-500 mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008h-.008v-.008Z" />
+                    </svg>
+                </div>
+                <h2 className="text-xl font-bold text-tamo-dark mb-2">المتجر غير موجود</h2>
+                <p className="text-gray-500">Boutique non trouvée</p>
+                <button
+                    onClick={() => router.push("/")}
+                    className="mt-6 px-6 py-2 bg-tamo-dark text-tamo-lime rounded-xl font-bold"
+                >
+                    العودة للرئيسية / Retour
+                </button>
+            </div>
+        );
+    }
 
     if (isSubmitted) {
         return (

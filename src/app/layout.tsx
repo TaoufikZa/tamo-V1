@@ -27,6 +27,8 @@ export const viewport = {
   viewportFit: "cover",
 };
 
+import { LocationProvider } from "@/context/LocationContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -37,12 +39,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-tamo-light text-tamo-dark`}
       >
-        <div className="mx-auto max-w-[400px] min-h-screen bg-tamo-light shadow-2xl relative flex flex-col sm:border-x sm:border-gray-200">
-          <Header />
-          <main className="flex-1 flex flex-col">
-            {children}
-          </main>
-        </div>
+        <LocationProvider>
+          <div className="mx-auto max-w-[400px] min-h-screen bg-tamo-light shadow-2xl relative flex flex-col sm:border-x sm:border-gray-200">
+            <Header />
+            <main className="flex-1 flex flex-col">
+              {children}
+            </main>
+          </div>
+        </LocationProvider>
       </body>
     </html>
   );
