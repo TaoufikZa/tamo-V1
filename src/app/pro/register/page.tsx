@@ -78,7 +78,7 @@ function RegisterForm() {
             formData.append("photo", photo);
 
             const res = await fetch(
-                "https://tamoit.app.n8n.cloud/webhook/tamo-pro-register",
+                "/api/register",
                 { method: "POST", body: formData }
             );
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { createClient } from "@supabase/supabase-js";
 
 // Data Type
 interface Order {
@@ -25,15 +24,6 @@ export default function OrderClient({ initialOrder, id }: { initialOrder: Order,
     // This prevents the audio from resetting while the merchant is typing the price.
     const audioSrc = useMemo(() => `${order.audio_url}?cb=${Date.now()}`, [order.audio_url]);
 
-    // Lazy initialize supabase client
-    const getSupabase = () => {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-        if (!supabaseUrl || !supabaseKey) {
-            throw new Error("Supabase environment variables are missing.");
-        }
-        return createClient(supabaseUrl, supabaseKey);
-    };
 
     const handleAcceptOrder = () => {
         setOrder({ ...order, status: "pricing" });
@@ -42,18 +32,9 @@ export default function OrderClient({ initialOrder, id }: { initialOrder: Order,
     const handleDeclineOrder = async () => {
         setIsSubmitting(true);
         try {
-            const supabase = getSupabase();
-            const { error: supabaseError } = await supabase
-                .from("orders")
-                .update({ status: "rejected", amount: 0 })
-                .eq("id", id);
-
-            if (supabaseError) throw supabaseError;
-
-            const response = await fetch(process.env.NEXT_PUBLIC_N8N_MERCHANT_REPLY_WEBHOOK_URL || "", {
+            const response = await fetch("/api/merchant-reply", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                mode: "cors",
                 body: JSON.stringify({
                     order_id: id,
                     shop_id: order.shop_id,
@@ -84,18 +65,9 @@ export default function OrderClient({ initialOrder, id }: { initialOrder: Order,
 
         setIsSubmitting(true);
         try {
-            const supabase = getSupabase();
-            const { error: supabaseError } = await supabase
-                .from("orders")
-                .update({ status: "accepted", amount: numericAmount })
-                .eq("id", id);
-
-            if (supabaseError) throw supabaseError;
-
-            const response = await fetch(process.env.NEXT_PUBLIC_N8N_MERCHANT_REPLY_WEBHOOK_URL || "", {
+            const response = await fetch("/api/merchant-reply", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                mode: "cors",
                 body: JSON.stringify({
                     order_id: id,
                     shop_id: order.shop_id,

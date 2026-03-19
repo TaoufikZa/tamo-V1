@@ -197,11 +197,9 @@ function ShopPageContent() {
             // 4. Debug Logging as requested
             console.log('Submission Payload:', Object.fromEntries(formData));
 
-            const response = await fetch(process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || "", {
+            const response = await fetch("/api/order", {
                 method: "POST",
                 body: formData,
-                // Note: Fetch sets the Boundary automatically when body is FormData
-                mode: "cors",
             });
 
             if (response.ok) {
